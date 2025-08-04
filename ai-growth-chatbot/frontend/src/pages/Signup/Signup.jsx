@@ -89,7 +89,7 @@ const Signup = () => {
         <div className="signup-header">
           <div className="logo">
             <Bot className="logo-icon" />
-            <span className="logo-text">Cally</span>
+            <span className="logo-text">Coby</span>
           </div>
           <h1>Create Account</h1>
           <p>Join us and start your journey</p>

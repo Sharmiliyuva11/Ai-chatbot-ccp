@@ -54,7 +54,7 @@ const Login = () => {
         <div className="login-header">
           <div className="logo">
             <Bot className="logo-icon" />
-            <span className="logo-text">Cally</span>
+            <span className="logo-text">Coby</span>
           </div>
           <h1>Welcome Back</h1>
           <p>Sign in to your account to continue</p>

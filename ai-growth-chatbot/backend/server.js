@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { sendCodingReminder, sendWelcomeEmail } = require('./emailService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +22,9 @@ const users = [
     name: 'Demo User'
   }
 ];
+
+// Simple in-memory storage for reminders (in production, use a database)
+const reminders = [];
 
 // Routes
 
@@ -163,6 +168,167 @@ app.get('/api/projects', (req, res) => {
     success: true,
     projects
   });
+});
+
+// Reminder endpoints
+
+// Set a coding reminder
+app.post('/api/reminders', (req, res) => {
+  const { type, frequency, projectName, time, userEmail, userName } = req.body;
+  
+  if (!type || !frequency || !userEmail || !userName) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required fields: type, frequency, userEmail, userName'
+    });
+  }
+
+  const reminder = {
+    id: reminders.length + 1,
+    type, // 'daily', 'project', 'weekly'
+    frequency,
+    projectName: projectName || '',
+    time: time || '09:00',
+    userEmail,
+    userName,
+    active: true,
+    createdAt: new Date(),
+    lastSent: null
+  };
+
+  reminders.push(reminder);
+
+  res.json({
+    success: true,
+    message: 'Reminder set successfully!',
+    reminder
+  });
+});
+
+// Get user's reminders
+app.get('/api/reminders/:userEmail', (req, res) => {
+  const { userEmail } = req.params;
+  const userReminders = reminders.filter(r => r.userEmail === userEmail);
+  
+  res.json({
+    success: true,
+    reminders: userReminders
+  });
+});
+
+// Send a test reminder email
+app.post('/api/reminders/send-test', async (req, res) => {
+  const { userEmail, userName, type, projectName } = req.body;
+  
+  if (!userEmail || !userName || !type) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required fields: userEmail, userName, type'
+    });
+  }
+
+  try {
+    const result = await sendCodingReminder(userEmail, userName, type, projectName);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Test reminder sent successfully!',
+        messageId: result.messageId
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to send reminder email',
+        error: result.error
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error sending reminder email',
+      error: error.message
+    });
+  }
+});
+
+// Delete a reminder
+app.delete('/api/reminders/:id', (req, res) => {
+  const { id } = req.params;
+  const reminderIndex = reminders.findIndex(r => r.id == id);
+  
+  if (reminderIndex === -1) {
+    return res.status(404).json({
+      success: false,
+      message: 'Reminder not found'
+    });
+  }
+
+  reminders.splice(reminderIndex, 1);
+  
+  res.json({
+    success: true,
+    message: 'Reminder deleted successfully!'
+  });
+});
+
+// Update reminder status (active/inactive)
+app.patch('/api/reminders/:id', (req, res) => {
+  const { id } = req.params;
+  const { active } = req.body;
+  
+  const reminder = reminders.find(r => r.id == id);
+  
+  if (!reminder) {
+    return res.status(404).json({
+      success: false,
+      message: 'Reminder not found'
+    });
+  }
+
+  reminder.active = active;
+  
+  res.json({
+    success: true,
+    message: `Reminder ${active ? 'activated' : 'deactivated'} successfully!`,
+    reminder
+  });
+});
+
+// Send welcome email
+app.post('/api/send-welcome-email', async (req, res) => {
+  const { userEmail, userName } = req.body;
+  
+  if (!userEmail || !userName) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required fields: userEmail, userName'
+    });
+  }
+
+  try {
+    const result = await sendWelcomeEmail(userEmail, userName);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Welcome email sent successfully!',
+        messageId: result.messageId
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to send welcome email',
+        error: result.error
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error sending welcome email',
+      error: error.message
+    });
+  }
 });
 
 // Error handling middleware

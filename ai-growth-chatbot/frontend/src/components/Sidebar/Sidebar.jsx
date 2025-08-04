@@ -41,7 +41,7 @@ const Sidebar = () => {
       <div className="sidebar-header">
         <div className="logo">
           <Bot className="logo-icon" />
-          <span className="logo-text">Cally</span>
+          <span className="logo-text">Coby</span>
           <span className="logo-subtitle">AI Assistant</span>
         </div>
       </div>

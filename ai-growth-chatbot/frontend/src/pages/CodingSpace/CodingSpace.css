@@ -473,3 +473,320 @@
     justify-content: center;
   }
 }
+
+/* Reminder Styles */
+.reminder-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reminder-btn:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.reminders-content {
+  padding: 20px;
+}
+
+.reminders-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.reminders-header h2 {
+  color: #1e40af;
+  margin-bottom: 8px;
+}
+
+.reminders-header p {
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.test-reminders {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.test-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.test-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.reminders-list {
+  display: grid;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.reminder-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.reminder-info h3 {
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.reminder-info p {
+  color: #6b7280;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.reminder-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.type-badge {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.inactive {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.empty-reminders {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.empty-reminders .empty-icon {
+  width: 64px;
+  height: 64px;
+  color: #9ca3af;
+  margin: 0 auto 20px;
+}
+
+.empty-reminders h3 {
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.empty-reminders p {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.set-reminder-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.set-reminder-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.reminder-modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  color: #1f2937;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #374151;
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 4px;
+  color: #f59e0b;
+  font-size: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.save-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  background: #1d4ed8;
+}

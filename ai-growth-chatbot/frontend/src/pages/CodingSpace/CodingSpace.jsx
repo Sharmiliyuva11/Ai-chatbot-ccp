@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { Code, Play, Save, Share, Plus, Search, FileText, Folder, Terminal } from 'lucide-react';
+import { Code, Play, Save, Share, Plus, Search, FileText, Folder, Terminal, Bell, Clock, Mail, Settings } from 'lucide-react';
 import './CodingSpace.css';
 
 const CodingSpace = () => {
   const [activeTab, setActiveTab] = useState('projects');
   const [selectedProject, setSelectedProject] = useState(null);
   const [code, setCode] = useState('// Welcome to Coding Space\n// Start coding here!\n\nfunction hello() {\n  console.log("Hello, World!");\n}\n\nhello();');
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminders, setReminders] = useState([]);
+  const [reminderForm, setReminderForm] = useState({
+    type: 'daily',
+    frequency: 'daily',
+    projectName: '',
+    time: '09:00',
+    userEmail: 'user@example.com', // In real app, get from user context
+    userName: 'Demo User'
+  });
 
   const projects = {
     projects: [
@@ -129,6 +139,90 @@ const CodingSpace = () => {
     alert('Share link copied to clipboard!');
   };
 
+  // Reminder functions
+  const handleSetReminder = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/reminders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reminderForm),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setReminders([...reminders, data.reminder]);
+        setShowReminderModal(false);
+        alert('Reminder set successfully! 🎉');
+        
+        // Reset form
+        setReminderForm({
+          type: 'daily',
+          frequency: 'daily',
+          projectName: '',
+          time: '09:00',
+          userEmail: 'user@example.com',
+          userName: 'Demo User'
+        });
+      } else {
+        alert('Failed to set reminder: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error setting reminder:', error);
+      alert('Error setting reminder. Please try again.');
+    }
+  };
+
+  const handleSendTestReminder = async (type, projectName = '') => {
+    try {
+      const response = await fetch('http://localhost:5000/api/reminders/send-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: reminderForm.userEmail,
+          userName: reminderForm.userName,
+          type,
+          projectName
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`Test ${type} reminder sent! Check your email 📧`);
+      } else {
+        alert('Failed to send test reminder: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error sending test reminder:', error);
+      alert('Error sending test reminder. Please try again.');
+    }
+  };
+
+  const deleteReminder = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/reminders/${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setReminders(reminders.filter(r => r.id !== id));
+        alert('Reminder deleted successfully!');
+      } else {
+        alert('Failed to delete reminder: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
+      alert('Error deleting reminder. Please try again.');
+    }
+  };
+
   return (
     <div className="coding-space">
       <div className="coding-header">
@@ -141,6 +235,14 @@ const CodingSpace = () => {
             <Search className="search-icon" />
             <input type="text" placeholder="Search projects..." />
           </div>
+          <button 
+            className="reminder-btn"
+            onClick={() => setShowReminderModal(true)}
+            title="Set coding reminders"
+          >
+            <Bell className="icon" />
+            Reminders
+          </button>
           <button className="create-project-btn">
             <Plus className="icon" />
             New Project
@@ -176,6 +278,13 @@ const CodingSpace = () => {
         >
           <Terminal className="tab-icon" />
           Code Editor
+        </button>
+        <button 
+          className={`tab ${activeTab === 'reminders' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reminders')}
+        >
+          <Bell className="tab-icon" />
+          Reminders ({reminders.length})
         </button>
       </div>
 
@@ -225,9 +334,83 @@ const CodingSpace = () => {
             </div>
           </div>
         </div>
+      ) : activeTab === 'reminders' ? (
+        <div className="reminders-content">
+          <div className="reminders-header">
+            <h2>Coding Reminders</h2>
+            <p>Stay consistent with your coding practice using email reminders</p>
+            <div className="test-reminders">
+              <button 
+                className="test-btn"
+                onClick={() => handleSendTestReminder('daily')}
+              >
+                <Mail className="icon" />
+                Test Daily Reminder
+              </button>
+              <button 
+                className="test-btn"
+                onClick={() => handleSendTestReminder('weekly')}
+              >
+                <Mail className="icon" />
+                Test Weekly Summary
+              </button>
+              <button 
+                className="test-btn"
+                onClick={() => handleSendTestReminder('project', 'React Todo App')}
+              >
+                <Mail className="icon" />
+                Test Project Reminder
+              </button>
+            </div>
+          </div>
+          
+          {reminders.length > 0 ? (
+            <div className="reminders-list">
+              {reminders.map((reminder) => (
+                <div key={reminder.id} className="reminder-card">
+                  <div className="reminder-info">
+                    <div className="reminder-type">
+                      <Bell className="icon" />
+                      <span className="type-badge">{reminder.type}</span>
+                    </div>
+                    <h3>{reminder.type === 'project' ? `Project: ${reminder.projectName}` : `${reminder.type.charAt(0).toUpperCase() + reminder.type.slice(1)} Reminder`}</h3>
+                    <p>Frequency: {reminder.frequency} at {reminder.time}</p>
+                    <p className="email">Email: {reminder.userEmail}</p>
+                    <div className="reminder-status">
+                      <span className={`status-badge ${reminder.active ? 'active' : 'inactive'}`}>
+                        {reminder.active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="reminder-actions">
+                    <button 
+                      className="delete-btn"
+                      onClick={() => deleteReminder(reminder.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-reminders">
+              <Bell className="empty-icon" />
+              <h3>No reminders set</h3>
+              <p>Set up email reminders to stay consistent with your coding practice.</p>
+              <button 
+                className="set-reminder-btn"
+                onClick={() => setShowReminderModal(true)}
+              >
+                <Plus className="icon" />
+                Set Your First Reminder
+              </button>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="projects-grid">
-          {projects[activeTab].map((item) => (
+          {projects[activeTab] && projects[activeTab].map((item) => (
             <div key={item.id} className="project-card">
               <div className="project-header">
                 <div className="project-language">
@@ -318,6 +501,97 @@ const CodingSpace = () => {
             <Plus className="icon" />
             Create New {activeTab.slice(0, -1)}
           </button>
+        </div>
+      )}
+
+      {/* Reminder Modal */}
+      {showReminderModal && (
+        <div className="modal-overlay" onClick={() => setShowReminderModal(false)}>
+          <div className="reminder-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Set Coding Reminder</h2>
+              <button 
+                className="close-btn"
+                onClick={() => setShowReminderModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <div className="form-group">
+                <label>Reminder Type</label>
+                <select 
+                  value={reminderForm.type}
+                  onChange={(e) => setReminderForm({...reminderForm, type: e.target.value})}
+                >
+                  <option value="daily">Daily Coding Reminder</option>
+                  <option value="project">Project Reminder</option>
+                  <option value="weekly">Weekly Summary</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Frequency</label>
+                <select 
+                  value={reminderForm.frequency}
+                  onChange={(e) => setReminderForm({...reminderForm, frequency: e.target.value})}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="bi-weekly">Bi-weekly</option>
+                </select>
+              </div>
+              
+              {reminderForm.type === 'project' && (
+                <div className="form-group">
+                  <label>Project Name</label>
+                  <input 
+                    type="text"
+                    value={reminderForm.projectName}
+                    onChange={(e) => setReminderForm({...reminderForm, projectName: e.target.value})}
+                    placeholder="Enter project name"
+                  />
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label>Time</label>
+                <input 
+                  type="time"
+                  value={reminderForm.time}
+                  onChange={(e) => setReminderForm({...reminderForm, time: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Email</label>
+                <input 
+                  type="email"
+                  value={reminderForm.userEmail}
+                  onChange={(e) => setReminderForm({...reminderForm, userEmail: e.target.value})}
+                  placeholder="your-email@example.com"
+                />
+                <small>⚠️ Note: Configure email settings in backend for actual email delivery</small>
+              </div>
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => setShowReminderModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="save-btn"
+                onClick={handleSetReminder}
+              >
+                <Bell className="icon" />
+                Set Reminder
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
