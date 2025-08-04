@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
+  Code,
   Users, 
   Brain, 
   MessageSquare, 
@@ -17,19 +18,22 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Add logout logic here
+    // Clear authentication
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
     console.log('Logging out...');
     navigate('/login');
   };
 
   const menuItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-    { path: '/roundtable', icon: Users, label: 'Roundtable' },
-    { path: '/mind-space', icon: Brain, label: 'Mind Space' },
-    { path: '/speak-up', icon: MessageSquare, label: 'Speak Up' },
-    { path: '/safe-link', icon: Shield, label: 'Safe Link' },
-    { path: '/profile', icon: User, label: 'Profile' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: '/dashboard/coding-space', icon: Code, label: 'Coding Space' },
+    { path: '/dashboard/roundtable', icon: Users, label: 'Roundtable' },
+    { path: '/dashboard/mind-space', icon: Brain, label: 'Mind Space' },
+    { path: '/dashboard/speak-up', icon: MessageSquare, label: 'Speak Up' },
+    { path: '/dashboard/safe-link', icon: Shield, label: 'Safe Link' },
+    { path: '/dashboard/profile', icon: User, label: 'Profile' },
+    { path: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
 
   return (
