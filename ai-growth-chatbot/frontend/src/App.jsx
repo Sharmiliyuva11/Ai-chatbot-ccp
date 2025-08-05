@@ -7,6 +7,7 @@ import Roundtable from './pages/Roundtable/Roundtable';
 import MindSpace from './pages/MindSpace/MindSpace';
 import SpeakUp from './pages/SpeakUp/SpeakUp';
 import SafeLink from './pages/SafeLink/SafeLink';
+import Reminders from './pages/Reminders/Reminders';
 import Profile from './pages/Profile/Profile';
 import Settings from './pages/Settings/Settings';
 import Landing from './pages/Landing/Landing';
@@ -59,6 +60,7 @@ function App() {
           <Route path="mind-space" element={<MindSpace />} />
           <Route path="speak-up" element={<SpeakUp />} />
           <Route path="safe-link" element={<SafeLink />} />
+          <Route path="reminders" element={<Reminders />} />
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
         </Route>

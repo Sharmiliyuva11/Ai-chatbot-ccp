@@ -10,7 +10,9 @@ import {
   User, 
   Settings, 
   LogOut,
-  Bot
+  Bot,
+  Calendar,
+  Bell
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -32,6 +34,7 @@ const Sidebar = () => {
     { path: '/dashboard/mind-space', icon: Brain, label: 'Mind Space' },
     { path: '/dashboard/speak-up', icon: MessageSquare, label: 'Speak Up' },
     { path: '/dashboard/safe-link', icon: Shield, label: 'Safe Link' },
+    { path: '/dashboard/reminders', icon: Bell, label: 'Reminders' },
     { path: '/dashboard/profile', icon: User, label: 'Profile' },
     { path: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
@@ -41,7 +44,7 @@ const Sidebar = () => {
       <div className="sidebar-header">
         <div className="logo">
           <Bot className="logo-icon" />
-          <span className="logo-text">Cally</span>
+          <span className="logo-text">Coby</span>
           <span className="logo-subtitle">AI Assistant</span>
         </div>
       </div>

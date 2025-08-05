@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../Sidebar/Sidebar';
-import Header from '../Header/Header';
 import './Layout.css';
 
 const Layout = () => {
@@ -9,7 +8,6 @@ const Layout = () => {
     <div className="layout">
       <Sidebar />
       <div className="main-content">
-        <Header />
         <main className="content">
           <Outlet />
         </main>
