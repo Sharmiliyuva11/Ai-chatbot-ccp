@@ -1,0 +1,236 @@
+:root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Modern Dark Theme Colors */
+  --primary-bg: #0f1419;
+  --secondary-bg: #1a1f2e;
+  --card-bg: #1e2a3a;
+  --accent-bg: #2d3748;
+  
+  --primary-blue: #4facfe;
+  --secondary-blue: #00f2fe;
+  --purple-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --blue-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-muted: #a0aec0;
+  --text-disabled: #718096;
+  
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.2);
+  
+  --success: #48bb78;
+  --warning: #ed8936;
+  --error: #f56565;
+  --info: #4299e1;
+
+  color-scheme: dark;
+  color: var(--text-primary);
+  background: var(--primary-bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+a {
+  font-weight: 500;
+  color: var(--primary-blue);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--secondary-blue);
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+button {
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+button:hover {
+  background: var(--accent-bg);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+input, textarea, select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-disabled);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-disabled);
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.6s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Utility Classes */
+.text-gradient {
+  background: var(--blue-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+}
+
+.shadow-lg {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.shadow-xl {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
+  
+  button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  input, textarea, select {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+}
