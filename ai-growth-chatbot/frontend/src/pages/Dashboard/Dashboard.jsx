@@ -9,6 +9,7 @@ import {
   Target,
   Award
 } from 'lucide-react';
+import Chatbot from '../../components/Chatbot/Chatbot';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -215,22 +216,29 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="activity-timeline">
-        <h3>Recent Timeline</h3>
-        <div className="timeline-list">
-          {activities.map((activity, index) => (
-            <div key={index} className={`timeline-item ${activity.status}`}>
-              <div className={`timeline-dot ${activity.color}`}></div>
-              <div className="timeline-content">
-                <p className="timeline-text">{activity.type}</p>
-                <span className="timeline-time">{activity.time}</span>
+      {/* Recent Activity and Chatbot */}
+      <div className="bottom-grid">
+        <div className="activity-timeline">
+          <h3>Recent Timeline</h3>
+          <div className="timeline-list">
+            {activities.map((activity, index) => (
+              <div key={index} className={`timeline-item ${activity.status}`}>
+                <div className={`timeline-dot ${activity.color}`}></div>
+                <div className="timeline-content">
+                  <p className="timeline-text">{activity.type}</p>
+                  <span className="timeline-time">{activity.time}</span>
+                </div>
+                <button className={`timeline-btn ${activity.status}`}>
+                  {activity.status === 'completed' ? 'Completed' : 'Pending'}
+                </button>
               </div>
-              <button className={`timeline-btn ${activity.status}`}>
-                {activity.status === 'completed' ? 'Completed' : 'Pending'}
-              </button>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+        
+        <div className="chatbot-section">
+          <h3>AI Assistant</h3>
+          <Chatbot />
         </div>
       </div>
     </div>
