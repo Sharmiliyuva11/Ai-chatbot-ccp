@@ -266,6 +266,7 @@
   line-height: 1.5;
   outline: none;
   font-family: inherit;
+  color: #000; /* Make input text clearly visible while typing */
 }
 
 .input-container textarea::placeholder {
@@ -282,8 +283,8 @@
 
 .voice-btn,
 .send-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px; /* larger for visibility */
+  height: 40px;
   border: none;
   border-radius: 50%;
   display: flex;
@@ -291,11 +292,12 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .voice-btn {
   background: #f1f5f9;
-  color: #64748b;
+  color: #0f172a; /* darker icon */
 }
 
 .voice-btn:hover {

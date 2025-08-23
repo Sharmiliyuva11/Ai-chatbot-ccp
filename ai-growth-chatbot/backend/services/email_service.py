@@ -44,13 +44,13 @@ class EmailService:
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🤖 Cally AI</h1>
+                        <h1>🤖 Coby AI</h1>
                         <h2>Password Reset Request</h2>
                     </div>
                     <div class="content">
                         <p>Hello {user_name},</p>
                         
-                        <p>We received a request to reset your password for your Cally AI account. If you didn't make this request, you can safely ignore this email.</p>
+                        <p>We received a request to reset your password for your Coby AI account. If you didn't make this request, you can safely ignore this email.</p>
                         
                         <p>To reset your password, click the button below:</p>
                         
@@ -67,11 +67,11 @@ class EmailService:
                         
                         <p>If you have any questions or need help, please contact our support team.</p>
                         
-                        <p>Best regards,<br>The Cally AI Team</p>
+                        <p>Best regards,<br>The Coby AI Team</p>
                     </div>
                     <div class="footer">
                         <p>This is an automated email. Please do not reply to this message.</p>
-                        <p>© 2024 Cally AI. All rights reserved.</p>
+                        <p>© 2024 Coby AI. All rights reserved.</p>
                     </div>
                 </div>
             </body>
@@ -150,15 +150,15 @@ class EmailService:
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🤖 Welcome to Cally AI!</h1>
+                        <h1>🤖 Welcome to Coby AI!</h1>
                         <p>Your AI-powered growth companion</p>
                     </div>
                     <div class="content">
                         <p>Hello {user_name},</p>
                         
-                        <p>Welcome to Cally AI! We're excited to have you join our community of learners and achievers.</p>
+                        <p>Welcome to Coby AI! We're excited to have you join our community of learners and achievers.</p>
                         
-                        <h3>🚀 What you can do with Cally:</h3>
+                        <h3>🚀 What you can do with Coby:</h3>
                         
                         <div class="feature">
                             <strong>💬 AI Chat Assistant</strong><br>
@@ -186,10 +186,10 @@ class EmailService:
                         
                         <p>If you have any questions or need help getting started, feel free to reach out to our support team.</p>
                         
-                        <p>Happy learning!<br>The Cally AI Team</p>
+                        <p>Happy learning!<br>The Coby AI Team</p>
                     </div>
                     <div class="footer">
-                        <p>© 2024 Cally AI. All rights reserved.</p>
+                        <p>© 2024 Coby AI. All rights reserved.</p>
                     </div>
                 </div>
             </body>
@@ -198,13 +198,13 @@ class EmailService:
 
             # Create text content (fallback)
             text_content = f"""
-            Welcome to Cally AI! 🎉
+            Welcome to Coby AI! 🎉
 
             Hello {user_name},
 
-            Welcome to Cally AI! We're excited to have you join our community of learners and achievers.
+            Welcome to Coby AI! We're excited to have you join our community of learners and achievers.
 
-            What you can do with Cally:
+            What you can do with Coby:
             - AI Chat Assistant: Get intelligent responses and personalized guidance
             - MindSpace: Organize your thoughts and ideas effectively  
             - Smart Reminders: Never miss important tasks or deadlines
@@ -215,10 +215,10 @@ class EmailService:
             If you have any questions or need help getting started, feel free to reach out to our support team.
 
             Happy learning!
-            The Cally AI Team
+            The Coby AI Team
 
             ---
-            © 2024 Cally AI. All rights reserved.
+            © 2024 Coby AI. All rights reserved.
             """
 
             # Attach parts

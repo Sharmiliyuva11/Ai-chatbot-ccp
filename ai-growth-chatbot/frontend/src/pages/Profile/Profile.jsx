@@ -19,8 +19,8 @@ import './Profile.css';
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'XXXX',
+    email: 'XXXX@example.com',
     phone: '+1 (555) 123-4567',
     dateOfBirth: '1990-05-15',
     location: 'New York, NY',
