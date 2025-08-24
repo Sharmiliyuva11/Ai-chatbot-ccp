@@ -62,7 +62,6 @@ class ApiService {
       localStorage.setItem('user', JSON.stringify(response.user));
       localStorage.setItem('isAuthenticated', 'true');
     }
-
     return response;
   }
 
@@ -123,7 +122,6 @@ class ApiService {
   async evaluateGrammar(audioFile) {
     const formData = new FormData();
     formData.append('audio', audioFile);
-
     return this.apiCall('/chatbot/grammar/evaluate', {
       method: 'POST',
       body: formData,

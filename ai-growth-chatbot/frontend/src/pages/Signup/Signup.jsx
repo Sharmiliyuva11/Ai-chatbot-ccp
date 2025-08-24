@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, User, Bot, AlertCircle } from 'lucide-react';
 import './Signup.css';
 
 const Signup = () => {
+  const { isDarkMode, toggleTheme } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',

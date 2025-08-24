@@ -276,7 +276,7 @@ const SpeakUp = () => {
                   <Heart className="bot-icon" />
                 </div>
                 <div>
-                  <h3>Cally AI Counselor</h3>
+                  <h3>Coby AI Counselor</h3>
                   <span className="status online">Online • Always here for you</span>
                 </div>
               </div>

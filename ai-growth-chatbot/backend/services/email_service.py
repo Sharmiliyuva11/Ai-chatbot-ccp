@@ -19,7 +19,7 @@ class EmailService:
         try:
             # Create message
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = "Password Reset Request - Cally AI"
+            msg['Subject'] = "Password Reset Request - Coby AI"
             msg['From'] = self.email_user
             msg['To'] = to_email
 
@@ -80,11 +80,11 @@ class EmailService:
 
             # Create text content (fallback)
             text_content = f"""
-            Password Reset Request - Cally AI
+            Password Reset Request - Coby AI
 
             Hello {user_name},
 
-            We received a request to reset your password for your Cally AI account. If you didn't make this request, you can safely ignore this email.
+            We received a request to reset your password for your Coby AI account. If you didn't make this request, you can safely ignore this email.
 
             To reset your password, visit the following link:
             {reset_url}
@@ -94,11 +94,11 @@ class EmailService:
             If you have any questions or need help, please contact our support team.
 
             Best regards,
-            The Cally AI Team
+            The Coby AI Team
 
             ---
             This is an automated email. Please do not reply to this message.
-            © 2024 Cally AI. All rights reserved.
+            © 2024 Coby AI. All rights reserved.
             """
 
             # Attach parts

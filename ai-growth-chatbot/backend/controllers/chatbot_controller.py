@@ -1,5 +1,6 @@
+
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
 import subprocess
 import uuid
@@ -19,7 +20,7 @@ load_dotenv()
 # Blueprint for chatbot routes
 chatbot_bp = Blueprint('chatbot', __name__)
 
-# Default system prompt
+# Default system prompt for OpenAI
 DEFAULT_SYSTEM_PROMPT = (
     "You are a supportive AI assistant designed for college students. "
     "You help with coding doubts, provide communication and grammar feedback, "
@@ -32,8 +33,8 @@ DEFAULT_SYSTEM_PROMPT = (
 @chatbot_bp.route('/message', methods=['POST'])
 @jwt_required()
 def handle_chat():
-    data = request.get_json(silent=True) or {}
-    message = (data.get('message') or '').strip()
+    data = request.get_json()
+    message = data.get('message')
 
     if not message:
         return jsonify({'success': False, 'message': 'No message provided'}), 400
