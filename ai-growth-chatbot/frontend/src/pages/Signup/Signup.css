@@ -8,7 +8,7 @@
 }
 
 .signup-card {
-  background: white;
+  background: var(--card-bg);
   padding: 2.5rem;
   border-radius: 16px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -100,7 +100,6 @@
   display: flex;
   align-items: center;
 }
-
 .input-container input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
@@ -108,8 +107,9 @@
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: white;
+  background: var(--secondary-bg);
 }
+
 
 .input-container input:focus {
   outline: none;
@@ -264,7 +264,8 @@
   }
   
   .signup-card {
-    padding: 2rem 1.5rem;
+  background: var(--card-bg);
+  padding: 2rem 1.5rem;
   }
   
   .checkbox-container {

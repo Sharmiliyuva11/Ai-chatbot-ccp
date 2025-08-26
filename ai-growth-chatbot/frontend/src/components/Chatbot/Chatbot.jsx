@@ -15,6 +15,7 @@ const Chatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadedPdfPath, setUploadedPdfPath] = useState(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -45,27 +46,80 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      // Import API service
       const { default: ApiService } = await import('../../services/api');
-      
-      const response = await ApiService.sendMessage(inputMessage);
 
-      if (response.success) {
-        const botMessage = {
-          id: Date.now() + 1,
-          text: response.response,
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, botMessage]);
+      // If user asks any question mentioning both 'pdf' and 'question', call getPdfQuestions
+      if (uploadedPdfPath && /pdf/i.test(inputMessage) && /question/i.test(inputMessage)) {
+        const response = await ApiService.getPdfQuestions(uploadedPdfPath);
+        if (response.success && response.questions) {
+          const botMessage = {
+            id: Date.now() + 1,
+            text: Array.isArray(response.questions) ? response.questions.join('\n') : response.questions,
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, botMessage]);
+        } else {
+          const errorMessage = {
+            id: Date.now() + 1,
+            text: response.message || "Sorry, I couldn't generate questions from the PDF.",
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        }
+      } else if (uploadedPdfPath && /pdf/i.test(inputMessage) && /(summary|summarize|explain|overview)/i.test(inputMessage)) {
+        // If user asks for summary/explanation of the PDF
+        const response = await ApiService.apiCall('/pdf/explain', {
+          method: 'POST',
+          body: JSON.stringify({ path: uploadedPdfPath }),
+          headers: ApiService.getAuthHeaders(),
+        });
+        if (response.success && response.summary) {
+          const botMessage = {
+            id: Date.now() + 1,
+            text: response.summary,
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, botMessage]);
+        } else if (response.success && response.explanation) {
+          const botMessage = {
+            id: Date.now() + 1,
+            text: response.explanation,
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, botMessage]);
+        } else {
+          const errorMessage = {
+            id: Date.now() + 1,
+            text: response.message || "Sorry, I couldn't summarize or explain the PDF.",
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        }
       } else {
-        const errorMessage = {
-          id: Date.now() + 1,
-          text: response.message || "Sorry, I'm having trouble processing your request right now. Please try again later.",
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, errorMessage]);
+        // Default: send message to chatbot
+        const response = await ApiService.sendMessage(inputMessage);
+        if (response.success) {
+          const botMessage = {
+            id: Date.now() + 1,
+            text: response.response,
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, botMessage]);
+        } else {
+          const errorMessage = {
+            id: Date.now() + 1,
+            text: response.message || "Sorry, I'm having trouble processing your request right now. Please try again later.",
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -158,6 +212,9 @@ const Chatbot = () => {
               const { default: api } = await import('../../services/api');
               try {
                 const res = await api.uploadFile(file);
+                if (res?.success && res?.path) {
+                  setUploadedPdfPath(res.path);
+                }
                 const text = res?.success
                   ? `File “${res.filename}” uploaded successfully.`
                   : `Upload failed: ${res?.message || 'Unknown error'}`;

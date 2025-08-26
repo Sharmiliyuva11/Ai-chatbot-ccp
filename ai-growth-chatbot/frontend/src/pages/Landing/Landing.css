@@ -10,13 +10,174 @@
 
 /* Header */
 .landing-header {
-  background: white;
+  background: var(--card-bg);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+}
+
+.logo-text {
+  color: var(--text-primary);
+}
+
+.nav-menu a {
+  color: var(--text-secondary);
+}
+
+.nav-menu a:hover {
+  color: var(--primary-blue);
+}
+
+.login-btn {
+  color: var(--text-secondary);
+}
+
+.login-btn:hover {
+  color: var(--primary-blue);
+}
+
+.signup-btn {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.signup-btn:hover {
+  background: var(--secondary-blue);
+}
+
+.hero {
+  background: var(--purple-gradient);
+  color: white;
+}
+
+.cta-primary {
+  background: white;
+  color: var(--primary-blue);
+}
+
+.cta-secondary {
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.features {
+  background: var(--secondary-bg);
+}
+
+.section-header h2 {
+  color: var(--text-primary);
+}
+
+.section-header p {
+  color: var(--text-secondary);
+}
+
+.feature-card {
+  background: var(--card-bg);
+}
+
+.feature-icon {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.feature-card h3 {
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+}
+
+.about-text h2 {
+  color: var(--text-primary);
+}
+
+.about-text p {
+  color: var(--text-secondary);
+}
+
+.about-feature span {
+  color: var(--text-primary);
+}
+
+.about-stat {
+  background: var(--secondary-bg);
+}
+
+.about-stat h3 {
+  color: var(--primary-blue);
+}
+
+.about-stat p {
+  color: var(--text-secondary);
+}
+
+.testimonials {
+  background: var(--secondary-bg);
+}
+
+.testimonial-card {
+  background: var(--card-bg);
+}
+
+.testimonial-card p {
+  color: var(--text-primary);
+}
+
+.testimonial-author strong {
+  color: var(--text-primary);
+}
+
+.testimonial-author span {
+  color: var(--text-secondary);
+}
+
+.cta {
+  background: var(--purple-gradient);
+  color: white;
+}
+
+.footer {
+  background: var(--secondary-bg);
+  border-top: 1px solid var(--border-color);
+}
+
+.footer h4 {
+  color: var(--text-primary);
+}
+
+.footer a {
+  color: var(--text-secondary);
+}
+
+.footer a:hover {
+  color: var(--primary-blue);
+}
+
+.footer-bottom p {
+  color: var(--text-muted);
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  color: var(--text-muted);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent-bg);
 }
 
 .header-content {

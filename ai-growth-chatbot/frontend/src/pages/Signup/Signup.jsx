@@ -4,7 +4,7 @@ import { Eye, EyeOff, Mail, Lock, User, Bot, AlertCircle } from 'lucide-react';
 import './Signup.css';
 
 const Signup = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+  // Removed useTheme to fix blank page error
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -117,7 +117,7 @@ const Signup = () => {
         <div className="signup-header">
           <div className="logo">
             <Bot className="logo-icon" />
-            <span className="logo-text">Cally</span>
+            <span className="logo-text">Coby</span>
           </div>
           <h1>Create Account</h1>
           <p>Join us and start your journey</p>

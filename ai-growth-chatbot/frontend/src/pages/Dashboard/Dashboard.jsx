@@ -163,7 +163,7 @@ const Dashboard = () => {
 
       {/* Bottom Section */}
       <div className="bottom-section">
-        <div className="insights-card">
+  <div className="insights-card mood-distribution-box">
           <h3>Mood Distribution</h3>
           <div className="mood-distribution">
             <div className="mood-circle">
@@ -195,7 +195,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="progress-card">
+  <div className="progress-card daily-meditation-box">
           <h3>Daily Meditation</h3>
           <div className="progress-stats">
             <div className="progress-item">
@@ -236,7 +236,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <div className="chatbot-section">
+  <div className="chatbot-section ai-assistant-box">
           <h3>AI Assistant</h3>
           <Chatbot />
         </div>

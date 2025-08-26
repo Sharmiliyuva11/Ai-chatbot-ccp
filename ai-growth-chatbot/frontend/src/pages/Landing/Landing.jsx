@@ -28,7 +28,7 @@ const Landing = () => {
     {
       icon: MessageSquare,
       title: 'AI Assistant',
-      description: 'Get instant help and guidance from our intelligent AI assistant, Cally.'
+  description: 'Get instant help and guidance from our intelligent AI assistant, Coby.'
     },
     {
       icon: Star,
@@ -41,7 +41,7 @@ const Landing = () => {
     {
       name: 'Sarah Johnson',
       role: 'Software Developer',
-      content: 'Cally has been a game-changer for my mental health journey. The AI support is incredibly helpful.',
+  content: 'Coby has been a game-changer for my mental health journey. The AI support is incredibly helpful.',
       rating: 5
     },
     {
@@ -66,7 +66,7 @@ const Landing = () => {
           <div className="header-content">
             <div className="logo">
               <Bot className="logo-icon" />
-              <span className="logo-text">Cally</span>
+              <span className="logo-text">Coby</span>
             </div>
             <nav className="nav-menu">
               <a href="#features">Features</a>
@@ -89,7 +89,7 @@ const Landing = () => {
             <div className="hero-text">
               <h1>Your AI-Powered Companion for Growth & Wellness</h1>
               <p>
-                Cally combines cutting-edge AI technology with mental health support, 
+                Coby combines cutting-edge AI technology with mental health support, 
                 coding tools, and community features to help you thrive in both your 
                 personal and professional journey.
               </p>
@@ -120,7 +120,7 @@ const Landing = () => {
             <div className="hero-visual">
               <div className="hero-card">
                 <Bot className="hero-icon" />
-                <h3>Meet Cally</h3>
+                <h3>Meet Coby</h3>
                 <p>Your intelligent AI assistant ready to help you grow</p>
               </div>
             </div>
@@ -133,7 +133,7 @@ const Landing = () => {
         <div className="container">
           <div className="section-header">
             <h2>Everything You Need to Thrive</h2>
-            <p>Discover the powerful features that make Cally your perfect companion</p>
+            <p>Discover the powerful features that make Coby your perfect companion</p>
           </div>
           <div className="features-grid">
             {features.map((feature, index) => (
@@ -154,9 +154,9 @@ const Landing = () => {
         <div className="container">
           <div className="about-content">
             <div className="about-text">
-              <h2>Why Choose Cally?</h2>
+              <h2>Why Choose Coby?</h2>
               <p>
-                Cally is more than just an AI assistant. We're your comprehensive platform 
+                Coby is more than just an AI assistant. We're your comprehensive platform 
                 for personal and professional growth, combining mental health support with 
                 practical tools for learning and development.
               </p>
@@ -204,7 +204,7 @@ const Landing = () => {
         <div className="container">
           <div className="section-header">
             <h2>What Our Users Say</h2>
-            <p>Join thousands of satisfied users who have transformed their lives with Cally</p>
+            <p>Join thousands of satisfied users who have transformed their lives with Coby</p>
           </div>
           <div className="testimonials-grid">
             {testimonials.map((testimonial, index) => (
@@ -230,7 +230,7 @@ const Landing = () => {
         <div className="container">
           <div className="cta-content">
             <h2>Ready to Start Your Journey?</h2>
-            <p>Join Cally today and discover a new way to grow, learn, and thrive.</p>
+            <p>Join Coby today and discover a new way to grow, learn, and thrive.</p>
             <div className="cta-actions">
               <Link to="/signup" className="cta-primary">
                 Get Started Free
@@ -249,7 +249,7 @@ const Landing = () => {
             <div className="footer-brand">
               <div className="logo">
                 <Bot className="logo-icon" />
-                <span className="logo-text">Cally</span>
+                <span className="logo-text">Coby</span>
               </div>
               <p>Your AI-powered companion for growth and wellness.</p>
             </div>
@@ -275,7 +275,7 @@ const Landing = () => {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2024 Cally. All rights reserved.</p>
+            <p>&copy; 2024 Coby. All rights reserved.</p>
           </div>
         </div>
       </footer>
