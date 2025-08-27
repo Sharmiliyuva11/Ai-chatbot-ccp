@@ -11,26 +11,31 @@ class ApiService {
     const token = localStorage.getItem('token');
     return {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
-  // Generic API call method
+  // Generic API call method with resilient JSON handling
   async apiCall(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const config = {
       headers: this.getAuthHeaders(),
-      ...options
+      ...options,
     };
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
-      
+      let data;
+      try {
+        data = await response.json();
+      } catch (_) {
+        data = { success: false, message: `HTTP ${response.status}` };
+      }
+
       if (!response.ok) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
-      
+
       return data;
     } catch (error) {
       console.error('API call failed:', error);
@@ -42,22 +47,21 @@ class ApiService {
   async register(userData) {
     return this.apiCall('/auth/register', {
       method: 'POST',
-      body: JSON.stringify(userData)
+      body: JSON.stringify(userData),
     });
   }
 
   async login(credentials) {
     const response = await this.apiCall('/auth/login', {
       method: 'POST',
-      body: JSON.stringify(credentials)
+      body: JSON.stringify(credentials),
     });
-    
+
     if (response.success && response.token) {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       localStorage.setItem('isAuthenticated', 'true');
     }
-    
     return response;
   }
 
@@ -69,21 +73,21 @@ class ApiService {
   async forgotPassword(data) {
     return this.apiCall('/auth/forgot-password', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
   }
 
   async verifyResetToken(data) {
     return this.apiCall('/auth/verify-reset-token', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
   }
 
   async resetPassword(data) {
     return this.apiCall('/auth/reset-password', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
   }
 
@@ -96,7 +100,7 @@ class ApiService {
   async changePassword(data) {
     return this.apiCall('/auth/change-password', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
   }
 
@@ -104,27 +108,40 @@ class ApiService {
   async sendMessage(message) {
     return this.apiCall('/chatbot/message', {
       method: 'POST',
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message }),
     });
   }
 
   async analyzeSentiment(message) {
     return this.apiCall('/chatbot/sentiment', {
       method: 'POST',
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message }),
     });
   }
 
   async evaluateGrammar(audioFile) {
     const formData = new FormData();
     formData.append('audio', audioFile);
-    
     return this.apiCall('/chatbot/grammar/evaluate', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+  }
+
+  // Generic file upload
+  async uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.apiCall('/chatbot/upload', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
     });
   }
 
@@ -136,13 +153,13 @@ class ApiService {
   async addReminder(reminderData) {
     return this.apiCall('/reminder/', {
       method: 'POST',
-      body: JSON.stringify(reminderData)
+      body: JSON.stringify(reminderData),
     });
   }
 
   async deleteReminder(reminderId) {
     return this.apiCall(`/reminder/${reminderId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     });
   }
 

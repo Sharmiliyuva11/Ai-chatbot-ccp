@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader } from 'lucide-react';
+import { Send, Bot, User, Loader, Mic, MicOff, Paperclip } from 'lucide-react';
 import './Chatbot.css';
 
 const Chatbot = () => {
@@ -13,7 +13,13 @@ const Chatbot = () => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,7 +61,7 @@ const Chatbot = () => {
       } else {
         const errorMessage = {
           id: Date.now() + 1,
-          text: "Sorry, I'm having trouble processing your request right now. Please try again later.",
+          text: response.message || "Sorry, I'm having trouble processing your request right now. Please try again later.",
           sender: 'bot',
           timestamp: new Date()
         };
@@ -131,6 +137,98 @@ const Chatbot = () => {
             disabled={isLoading}
             className="message-input"
           />
+
+          {/* File upload button */}
+          <button
+            type="button"
+            className="send-button"
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload a file"
+          >
+            <Paperclip size={20} />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setSelectedFile(file);
+              const { default: api } = await import('../../services/api');
+              try {
+                const res = await api.uploadFile(file);
+                const text = res?.success
+                  ? `File “${res.filename}” uploaded successfully.`
+                  : `Upload failed: ${res?.message || 'Unknown error'}`;
+                setMessages((prev) => [
+                  ...prev,
+                  { id: Date.now() + 2, text, sender: 'bot', timestamp: new Date() },
+                ]);
+              } catch (err) {
+                setMessages((prev) => [
+                  ...prev,
+                  { id: Date.now() + 3, text: `Upload error: ${err.message}`, sender: 'bot', timestamp: new Date() },
+                ]);
+              }
+            }}
+          />
+
+          {/* Voice toggle */}
+          <button
+            type="button"
+            className="send-button"
+            title={isRecording ? 'Stop recording' : 'Start voice message'}
+            onClick={async () => {
+              try {
+                if (!isRecording) {
+                  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                  streamRef.current = stream;
+                  const recorder = new MediaRecorder(stream);
+                  mediaRecorderRef.current = recorder;
+                  audioChunksRef.current = [];
+                  recorder.ondataavailable = (e) => e.data && audioChunksRef.current.push(e.data);
+                  recorder.onstop = async () => {
+                    const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                    const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+                    const { default: api } = await import('../../services/api');
+                    try {
+                      const res = await api.evaluateGrammar(file);
+                      const text = res?.success
+                        ? `Grammar analysis score: ${res.grammar_score ?? 'N/A'}. Issues: ${res.issues_found}.`
+                        : `Grammar check failed: ${res?.message || res?.error || 'Unknown error'}`;
+                      setMessages((prev) => [
+                        ...prev,
+                        { id: Date.now() + 4, text, sender: 'bot', timestamp: new Date() },
+                      ]);
+                    } catch (err) {
+                      setMessages((prev) => [
+                        ...prev,
+                        { id: Date.now() + 5, text: `Grammar check error: ${err.message}`, sender: 'bot', timestamp: new Date() },
+                      ]);
+                    }
+                    streamRef.current?.getTracks().forEach((t) => t.stop());
+                    streamRef.current = null;
+                  };
+                  recorder.start();
+                  setIsRecording(true);
+                } else {
+                  mediaRecorderRef.current?.stop();
+                  setIsRecording(false);
+                }
+              } catch (err) {
+                setIsRecording(false);
+                setMessages((prev) => [
+                  ...prev,
+                  { id: Date.now() + 6, text: `Microphone error: ${err.message}`, sender: 'bot', timestamp: new Date() },
+                ]);
+              }
+            }}
+          >
+            {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+          </button>
+
+          {/* Send */}
           <button 
             type="submit" 
             disabled={!inputMessage.trim() || isLoading}
