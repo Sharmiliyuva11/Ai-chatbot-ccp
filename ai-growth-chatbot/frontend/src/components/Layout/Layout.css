@@ -1,12 +1,22 @@
+
 .layout {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+}
+
+.layout.light {
+  background: #f0f2f5;
+  color: #333;
+}
+
+.layout.dark {
+  background: #1a1a1a;
+  color: #f0f2f5;
 }
 
 .main-content {
   flex: 1;
-  margin-left: 280px;
+  margin-left: 280px; /* Adjust as needed for sidebar width */
   display: flex;
   flex-direction: column;
   min-height: 100vh;

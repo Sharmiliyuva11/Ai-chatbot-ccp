@@ -12,12 +12,16 @@ import {
   LogOut,
   Bot,
   Calendar,
-  Bell
+  Bell,
+  Sun, // Add Sun icon
+  Moon // Add Moon icon
 } from 'lucide-react';
+import { useTheme } from '../../contexts/useTheme'; // Import useTheme
 import './Sidebar.css';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme(); // Use theme context
 
   const handleLogout = () => {
     // Clear authentication
@@ -40,7 +44,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${theme}`}>
       <div className="sidebar-header">
         <div className="logo">
           <Bot className="logo-icon" />
@@ -69,6 +73,10 @@ const Sidebar = () => {
       </nav>
 
       <div className="sidebar-footer">
+        <button className="theme-toggle-btn" onClick={toggleTheme}>
+          {theme === 'light' ? <Moon className="theme-icon" /> : <Sun className="theme-icon" />}
+          <span className="nav-label">{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+        </button>
         <button className="logout-btn" onClick={handleLogout}>
           <LogOut className="nav-icon" />
           <span className="nav-label">Logout</span>

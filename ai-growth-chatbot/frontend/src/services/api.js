@@ -62,6 +62,7 @@ class ApiService {
       localStorage.setItem('user', JSON.stringify(response.user));
       localStorage.setItem('isAuthenticated', 'true');
     }
+
     return response;
   }
 
@@ -122,6 +123,7 @@ class ApiService {
   async evaluateGrammar(audioFile) {
     const formData = new FormData();
     formData.append('audio', audioFile);
+
     return this.apiCall('/chatbot/grammar/evaluate', {
       method: 'POST',
       body: formData,
@@ -132,16 +134,25 @@ class ApiService {
   }
 
   // Generic file upload
+
   async uploadFile(file) {
     const formData = new FormData();
     formData.append('file', file);
-
-    return this.apiCall('/chatbot/upload', {
+    return this.apiCall('/pdf/upload', {
       method: 'POST',
       body: formData,
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
+    });
+  }
+
+  // Request questions from uploaded PDF
+  async getPdfQuestions(pdfPath) {
+    return this.apiCall('/pdf/questions', {
+      method: 'POST',
+      body: JSON.stringify({ path: pdfPath }),
+      headers: this.getAuthHeaders(),
     });
   }
 

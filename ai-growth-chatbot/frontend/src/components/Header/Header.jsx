@@ -1,8 +1,11 @@
-import React from 'react';
-import { Bell, Search, User } from 'lucide-react';
+import React, { useContext } from 'react';
+import { Bell, Search, User, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../contexts/useTheme';
 import './Header.css';
 
 const Header = () => {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <header className="header">
       <div className="header-left">
@@ -20,24 +23,22 @@ const Header = () => {
           />
         </div>
         
-        <div className="header-actions">
-          <button className="notification-btn">
-            <Bell className="icon" />
-            <span className="notification-badge">3</span>
-          </button>
-          
-          <div className="user-profile">
-            <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
-              alt="User Avatar" 
-              className="user-avatar"
-            />
-            <div className="user-info">
-              <span className="user-name">John Doe</span>
-              <span className="user-role">Member</span>
-            </div>
+          <div className="header-actions">
+            <button className="theme-toggle-btn" onClick={toggleTheme}>
+              {theme === 'light' ? <Moon className="icon" /> : <Sun className="icon" />}
+            </button>
+            <Link to="/notifications" className="notification-btn">
+              <Bell className="icon" />
+              <span className="notification-badge">3</span>
+            </Link>
+            <Link to="/profile" className="user-profile">
+              <img 
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
+                alt="User Avatar" 
+                className="user-avatar"
+              />
+            </Link>
           </div>
-        </div>
       </div>
     </header>
   );

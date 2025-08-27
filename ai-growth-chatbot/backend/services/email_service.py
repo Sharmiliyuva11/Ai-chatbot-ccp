@@ -127,7 +127,7 @@ class EmailService:
         try:
             # Create message
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = "Welcome to Cally AI! 🎉"
+            msg['Subject'] = "Welcome to Coby AI! 🎉"
             msg['From'] = self.email_user
             msg['To'] = to_email
 

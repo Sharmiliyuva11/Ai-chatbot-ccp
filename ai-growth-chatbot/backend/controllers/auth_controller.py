@@ -94,8 +94,8 @@ def register():
         print(f"Failed to send welcome email: {e}")
 
     return jsonify({
-        'success': True,
-        'message': 'Registration successful! Welcome to Cally AI!',
+    'success': True,
+    'message': 'Registration successful! Welcome to Coby AI!',
         'user': {
             'id': str(user_id),
             'name': name,

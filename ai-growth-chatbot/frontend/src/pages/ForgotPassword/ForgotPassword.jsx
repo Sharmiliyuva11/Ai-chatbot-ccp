@@ -45,7 +45,7 @@ const ForgotPassword = () => {
           <div className="forgot-password-header">
             <div className="logo">
               <Bot className="logo-icon" />
-              <span className="logo-text">Cally</span>
+              <span className="logo-text">Coby</span>
             </div>
             <div className="success-icon">
               <CheckCircle size={48} />
@@ -87,7 +87,7 @@ const ForgotPassword = () => {
         <div className="forgot-password-header">
           <div className="logo">
             <Bot className="logo-icon" />
-            <span className="logo-text">Cally</span>
+            <span className="logo-text">Coby</span>
           </div>
           <h1>Forgot Password?</h1>
           <p>No worries! Enter your email address and we'll send you a link to reset your password.</p>

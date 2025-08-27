@@ -119,7 +119,7 @@ const ResetPassword = () => {
           <div className="reset-password-header">
             <div className="logo">
               <Bot className="logo-icon" />
-              <span className="logo-text">Cally</span>
+              <span className="logo-text">Coby</span>
             </div>
             <div className="loading-spinner">
               <div className="spinner"></div>
@@ -139,7 +139,7 @@ const ResetPassword = () => {
           <div className="reset-password-header">
             <div className="logo">
               <Bot className="logo-icon" />
-              <span className="logo-text">Cally</span>
+              <span className="logo-text">Coby</span>
             </div>
             <div className="error-icon">
               <AlertCircle size={48} />
@@ -168,7 +168,7 @@ const ResetPassword = () => {
           <div className="reset-password-header">
             <div className="logo">
               <Bot className="logo-icon" />
-              <span className="logo-text">Cally</span>
+              <span className="logo-text">Coby</span>
             </div>
             <div className="success-icon">
               <CheckCircle size={48} />
@@ -194,7 +194,7 @@ const ResetPassword = () => {
         <div className="reset-password-header">
           <div className="logo">
             <Bot className="logo-icon" />
-            <span className="logo-text">Cally</span>
+              <span className="logo-text">Coby</span>
           </div>
           <h1>Reset Your Password</h1>
           <p>Enter your new password below</p>

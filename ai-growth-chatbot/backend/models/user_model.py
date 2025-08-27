@@ -14,20 +14,38 @@ try:
     mongo_uri = os.getenv("MONGO_URI")
     if mongo_uri and mongo_uri != "mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority":
         # Add SSL certificate verification bypass for development
-        client = MongoClient(
-            mongo_uri,
-            tls=True,
-            tlsAllowInvalidCertificates=True,
-            serverSelectionTimeoutMS=5000,
-            connectTimeoutMS=10000,
-            socketTimeoutMS=10000
-        )
-        # Test connection
-        client.admin.command('ping')
-        db = client.get_database("ai_chatbot_ccp")
-        user_collection = db["users"]
-        reset_tokens_collection = db["reset_tokens"]
-        print("✅ Connected to MongoDB successfully")
+        # Try with SSL first, then fallback to no SSL if needed
+        try:
+            client = MongoClient(
+                mongo_uri,
+                tls=True,
+                tlsAllowInvalidCertificates=True,
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=10000,
+                socketTimeoutMS=10000
+            )
+            # Test connection
+            client.admin.command('ping')
+            db = client.get_database("ai_chatbot_ccp")
+            user_collection = db["users"]
+            reset_tokens_collection = db["reset_tokens"]
+            print("✅ Connected to MongoDB successfully with SSL")
+        except Exception as ssl_error:
+            print(f"⚠️ SSL connection failed: {ssl_error}")
+            print("⚠️ Trying without SSL...")
+            # Try without SSL
+            client = MongoClient(
+                mongo_uri,
+                tls=False,
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=10000,
+                socketTimeoutMS=10000
+            )
+            client.admin.command('ping')
+            db = client.get_database("ai_chatbot_ccp")
+            user_collection = db["users"]
+            reset_tokens_collection = db["reset_tokens"]
+            print("✅ Connected to MongoDB successfully without SSL")
     else:
         # Use in-memory storage for testing
         print("⚠️ Warning: Using in-memory storage. Set MONGO_URI in .env for persistent storage.")

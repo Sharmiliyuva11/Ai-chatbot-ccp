@@ -1,46 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useMemo } from 'react';
 
-const ThemeContext = createContext();
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check localStorage first, then system preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      return savedTheme === 'dark';
-    }
-    // Check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  useEffect(() => {
-    // Save theme preference to localStorage
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    
-    // Apply theme class to document root
-    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-    
-    // Also add class to body for easier styling
-    document.body.className = isDarkMode ? 'dark-theme' : 'light-theme';
-  }, [isDarkMode]);
+  const [theme, setTheme] = useState('light');
 
   const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  const value = {
-    isDarkMode,
-    toggleTheme,
-    theme: isDarkMode ? 'dark' : 'light'
-  };
+  const value = useMemo(() => ({
+    theme,
+    toggleTheme
+  }), [theme]);
 
   return (
     <ThemeContext.Provider value={value}>

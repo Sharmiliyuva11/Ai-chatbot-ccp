@@ -1,4 +1,4 @@
-# Cally - AI Growth Chatbot
+# Coby - AI Growth Chatbot
 
 A comprehensive AI-powered platform combining mental health support, coding tools, and community features.
 
@@ -92,7 +92,7 @@ The frontend currently uses localStorage for authentication, but a backend serve
 
 1. **Access the Application**: Open your browser and go to `http://localhost:5173`
 
-2. **Landing Page**: You'll see the landing page with information about Cally
+2. **Landing Page**: You'll see the landing page with information about Coby
 
 3. **Sign Up**: Click "Get Started" or "Sign Up" to create a new account
 
