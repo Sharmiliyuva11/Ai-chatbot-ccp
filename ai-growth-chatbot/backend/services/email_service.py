@@ -3,10 +3,72 @@ import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
-
 load_dotenv()
 
 class EmailService:
+    def send_reminder_email(self, to_email, reminder):
+        """Send a reminder notification email"""
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"Reminder: {reminder.get('title', 'Task')}"
+            msg['From'] = self.email_user
+            msg['To'] = to_email
+
+            # HTML content
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='utf-8'>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #6366f1 0%, #764ba2 100%); color: white; padding: 24px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #f9f9f9; padding: 24px; border-radius: 0 0 10px 10px; }}
+                    .footer {{ text-align: center; margin-top: 24px; color: #666; font-size: 14px; }}
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h2>⏰ Reminder Notification</h2>
+                    </div>
+                    <div class='content'>
+                        <p>Hello,</p>
+                        <p>This is a reminder for your task:</p>
+                        <h3>{reminder.get('title', 'Task')}</h3>
+                        <p>{reminder.get('description', '')}</p>
+                        <p><strong>Scheduled Time:</strong> {reminder.get('date', '')} {reminder.get('time', '')}</p>
+                        <p>Don't forget to complete your task!</p>
+                    </div>
+                    <div class='footer'>
+                        <p>© 2024 Coby AI. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # Plain text fallback
+            text_content = f"""
+            Reminder Notification\n\nTask: {reminder.get('title', 'Task')}\nDescription: {reminder.get('description', '')}\nScheduled Time: {reminder.get('date', '')} {reminder.get('time', '')}\nDon't forget to complete your task!\n\n© 2024 Coby AI. All rights reserved.
+            """
+
+            part1 = MIMEText(text_content, 'plain')
+            part2 = MIMEText(html_content, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            server = smtplib.SMTP(self.smtp_host, self.smtp_port)
+            server.starttls()
+            server.login(self.email_user, self.email_pass)
+            text = msg.as_string()
+            server.sendmail(self.email_user, to_email, text)
+            server.quit()
+            return True
+        except Exception as e:
+            print(f"Failed to send reminder email: {str(e)}")
+            return False
     def __init__(self):
         self.smtp_host = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('EMAIL_PORT', 587))
@@ -267,6 +329,7 @@ class EmailService:
         except Exception as e:
             print(f"Failed to send email: {str(e)}")
             return False
+    
 
 # Create global instance
 email_service = EmailService()

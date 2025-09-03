@@ -1,6 +1,6 @@
 @echo off
 echo Starting AI Chatbot Backend...
-cd /d "c:\Users\Y.SHARMILI\OneDrive\Desktop\Ai chatbot ccp\ai-growth-chatbot\backend"
+cd /d "c:\Users\gace2\Desktop\sha\ccp\Ai-chatbot-ccp\ai-growth-chatbot\backend"
 echo.
 echo ===============================================
 echo   AI CHATBOT BACKEND - STARTING...

@@ -112,9 +112,9 @@ const Signup = () => {
   };
 
   return (
-    <div className="signup-container">
-      <div className="signup-card">
-        <div className="signup-header">
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
           <div className="logo">
             <Bot className="logo-icon" />
             <span className="logo-text">Coby</span>
@@ -123,7 +123,7 @@ const Signup = () => {
           <p>Join us and start your journey</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="signup-form">
+        <form onSubmit={handleSubmit} className="login-form">
           {error && (
             <div className="error-message">
               <AlertCircle size={16} />
@@ -228,7 +228,7 @@ const Signup = () => {
 
           <button
             type="submit"
-            className={`signup-btn ${isLoading ? 'loading' : ''}`}
+            className={`login-btn ${isLoading ? 'loading' : ''}`}
             disabled={isLoading || isGoogleLoading}
           >
             {isLoading ? 'Creating Account...' : 'Create Account'}
@@ -254,10 +254,10 @@ const Signup = () => {
           </button>
         </form>
 
-        <div className="signup-footer">
+        <div className="login-footer">
           <p>
             Already have an account?{' '}
-            <Link to="/login" className="login-link">
+            <Link to="/login" className="signup-link">
               Sign in
             </Link>
           </p>

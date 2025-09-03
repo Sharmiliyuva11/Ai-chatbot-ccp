@@ -84,8 +84,8 @@ const Settings = () => {
   return (
     <div className="settings">
       <div className="settings-header">
-        <h1>Settings</h1>
-        <p>Manage your account preferences and privacy settings</p>
+        <h1>  Settings</h1>
+        <p>  Manage your account preferences and privacy settings</p>
       </div>
 
       <div className="settings-container">

@@ -136,93 +136,117 @@ const Reminders = () => {
       </div>
 
       {showAddForm && (
-        <div className="add-reminder-form">
-          <div className="form-header">
-            <h3>Create New Reminder</h3>
-            <button 
-              className="close-btn"
-              onClick={() => setShowAddForm(false)}
-            >
-              ×
-            </button>
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="add-reminder-modal">
+            <div className="modal-header">
+              <button
+                className="modal-back"
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                aria-label="Close"
+              >
+                ←
+              </button>
+              <h2 className="modal-title">Reminders</h2>
+              <button
+                className="modal-menu"
+                type="button"
+                aria-label="Menu"
+              >
+                ≡
+              </button>
+            </div>
+
+            <div className="modal-card">
+              <form onSubmit={handleAddReminder}>
+                <div className="modal-field">
+                  <label>Task Title<span className="req">*</span></label>
+                  <input
+                    type="text"
+                    value={newReminder.title}
+                    onChange={(e) => setNewReminder({ ...newReminder, title: e.target.value })}
+                    placeholder="Enter task title"
+                    required
+                  />
+                </div>
+
+                <div className="modal-row">
+                  <div className="modal-field">
+                    <label>Reminder Date<span className="req">*</span></label>
+                    <input
+                      type="date"
+                      value={newReminder.date}
+                      onChange={(e) => setNewReminder({ ...newReminder, date: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="modal-field">
+                    <label>Reminder Time<span className="req">*</span></label>
+                    <input
+                      type="time"
+                      value={newReminder.time}
+                      onChange={(e) => setNewReminder({ ...newReminder, time: e.target.value })}
+                      required
+                    />
+                    <div className="ampm-group">
+                      <label className="check">
+                        <input
+                          type="radio"
+                          name="ampm"
+                          checked={(newReminder.ampm || 'AM') === 'AM'}
+                          onChange={() => setNewReminder({ ...newReminder, ampm: 'AM' })}
+                        />
+                        <span>AM</span>
+                      </label>
+                      <label className="check">
+                        <input
+                          type="radio"
+                          name="ampm"
+                          checked={newReminder.ampm === 'PM'}
+                          onChange={() => setNewReminder({ ...newReminder, ampm: 'PM' })}
+                        />
+                        <span>PM</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-field">
+                  <label>Note <span className="optional">(optional)</span></label>
+                  <textarea
+                    value={newReminder.description}
+                    onChange={(e) => setNewReminder({ ...newReminder, description: e.target.value })}
+                    placeholder="Add a note"
+                    rows="3"
+                  />
+                </div>
+
+                <div className="modal-field">
+                  <label>Reminder Frequency<span className="req">*</span></label>
+                  <div className="frequency-group">
+                    {['one-time','daily','weekly','monthly','custom'].map((opt) => (
+                      <label key={opt} className={`check pill ${newReminder.recurring === opt ? 'active' : ''}`}>
+                        <input
+                          type="radio"
+                          name="recurring"
+                          checked={newReminder.recurring === opt}
+                          onChange={() => setNewReminder({ ...newReminder, recurring: opt })}
+                        />
+                        <span>{
+                          opt === 'one-time' ? 'One time' : opt.charAt(0).toUpperCase() + opt.slice(1)
+                        }</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="modal-actions">
+                  <button type="submit" className="primary">Save</button>
+                  <button type="button" className="secondary" onClick={() => setNewReminder({ title:'', description:'', time:'', date:'', priority:'medium', recurring:'none' })}>Clear</button>
+                </div>
+              </form>
+            </div>
           </div>
-          <form onSubmit={handleAddReminder}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Title</label>
-                <input
-                  type="text"
-                  value={newReminder.title}
-                  onChange={(e) => setNewReminder({...newReminder, title: e.target.value})}
-                  placeholder="Enter reminder title"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Priority</label>
-                <select
-                  value={newReminder.priority}
-                  onChange={(e) => setNewReminder({...newReminder, priority: e.target.value})}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                value={newReminder.description}
-                onChange={(e) => setNewReminder({...newReminder, description: e.target.value})}
-                placeholder="Enter reminder description"
-                rows="3"
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Date</label>
-                <input
-                  type="date"
-                  value={newReminder.date}
-                  onChange={(e) => setNewReminder({...newReminder, date: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Time</label>
-                <input
-                  type="time"
-                  value={newReminder.time}
-                  onChange={(e) => setNewReminder({...newReminder, time: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Recurring</label>
-                <select
-                  value={newReminder.recurring}
-                  onChange={(e) => setNewReminder({...newReminder, recurring: e.target.value})}
-                >
-                  <option value="none">None</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-actions">
-              <button type="button" onClick={() => setShowAddForm(false)}>
-                Cancel
-              </button>
-              <button type="submit">
-                Create Reminder
-              </button>
-            </div>
-          </form>
         </div>
       )}
 
@@ -232,17 +256,25 @@ const Reminders = () => {
             key={reminder.id} 
             className={`reminder-card ${reminder.completed ? 'completed' : ''} ${reminder.priority}`}
           >
+            {/* Badges Row */}
+            <div className="reminder-badges">
+              <span className={`reminder-badge ${reminder.priority}`}>{reminder.priority.charAt(0).toUpperCase() + reminder.priority.slice(1)}</span>
+              <span className={`reminder-badge ${reminder.completed ? 'completed' : 'pending'}`}>{reminder.completed ? 'Completed' : 'Pending'}</span>
+              {reminder.recurring !== 'none' && (
+                <span className={`reminder-badge ${reminder.recurring}`}>{reminder.recurring.charAt(0).toUpperCase() + reminder.recurring.slice(1)}</span>
+              )}
+            </div>
             <div className="reminder-main">
               <button 
                 className="complete-btn"
                 onClick={() => toggleComplete(reminder.id)}
+                title={reminder.completed ? 'Mark as Incomplete' : 'Mark as Complete'}
               >
                 {reminder.completed ? 
                   <CheckCircle className="complete-icon completed" /> : 
                   <Circle className="complete-icon" />
                 }
               </button>
-              
               <div className="reminder-content">
                 <div className="reminder-title-row">
                   <h3 className="reminder-title">{reminder.title}</h3>
@@ -261,22 +293,31 @@ const Reminders = () => {
                   {reminder.recurring !== 'none' && (
                     <span className="reminder-recurring">
                       <Bell className="meta-icon" />
-                      {reminder.recurring}
+                      {reminder.recurring.charAt(0).toUpperCase() + reminder.recurring.slice(1)}
                     </span>
                   )}
                 </div>
               </div>
             </div>
-            
-            <div className="reminder-actions">
-              <button className="action-btn edit">
-                <Edit3 className="action-icon" />
-              </button>
+            <div className="reminder-divider" />
+            <div className="reminder-footer">
+              <div className="reminder-actions">
+                <button className="action-btn edit" title="Edit Reminder">
+                  <Edit3 className="action-icon" />
+                </button>
+                <button 
+                  className="action-btn delete"
+                  onClick={() => deleteReminder(reminder.id)}
+                  title="Delete Reminder"
+                >
+                  <Trash2 className="action-icon" />
+                </button>
+              </div>
               <button 
-                className="action-btn delete"
-                onClick={() => deleteReminder(reminder.id)}
+                className={`cta-btn ${reminder.completed ? 'secondary' : 'primary'}`}
+                onClick={() => toggleComplete(reminder.id)}
               >
-                <Trash2 className="action-icon" />
+                {reminder.completed ? 'Mark Incomplete' : 'Mark Complete'}
               </button>
             </div>
           </div>

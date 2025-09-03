@@ -1,0 +1,6 @@
+.simple-page { padding: 6rem 0 4rem; }
+.simple-page-header { text-align: center; margin-bottom: 2rem; }
+.simple-page-header h1 { font-size: 2rem; color: #1e293b; margin-bottom: 0.5rem; }
+.simple-page-header p { color: #64748b; }
+.simple-page-content { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); padding: 1.5rem; }
+@media (prefers-color-scheme: dark) { .simple-page-content { background: var(--card-bg, #0b1220); } .simple-page-header h1 { color: var(--text-primary, #e5e7eb); } .simple-page-header p { color: var(--text-secondary, #9ca3af); } }

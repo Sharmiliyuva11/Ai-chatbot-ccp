@@ -20,6 +20,7 @@ import AuthCallback from './pages/AuthCallback/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import { ThemeProvider } from './contexts/ThemeContext';
+import SimplePage from './pages/Static/SimplePage';
 import './App.css';
 
 const App = () => {
@@ -29,6 +30,16 @@ const App = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
+          {/* Footer-linked public pages */}
+          <Route path="/features" element={<SimplePage title="Features" subtitle="Explore what Coby offers."/>} />
+          <Route path="/about" element={<SimplePage title="About" subtitle="Learn more about Coby.">Coby blends AI-assisted growth tools with wellness support and a helpful community.</SimplePage>} />
+          <Route path="/testimonials" element={<SimplePage title="Testimonials" subtitle="What our users say."/>} />
+          <Route path="/contact" element={<SimplePage title="Contact" subtitle="We’d love to hear from you.">Reach us at support@coby.app</SimplePage>} />
+          <Route path="/community" element={<SimplePage title="Community" subtitle="Join discussions and events."/>} />
+          <Route path="/help" element={<SimplePage title="Help Center" subtitle="Guides and FAQs to get you started."/>} />
+          <Route path="/privacy" element={<SimplePage title="Privacy Policy" subtitle="Your privacy matters.">We respect your data and follow best practices to keep it safe.</SimplePage>} />
+          <Route path="/terms" element={<SimplePage title="Terms of Service" subtitle="Please read carefully."/>} />
+          <Route path="/security" element={<SimplePage title="Security" subtitle="How we keep things secure."/>} />
           <Route path="/login" element={
               <PublicRoute>
                 <Login />

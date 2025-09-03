@@ -23,7 +23,7 @@
 .dashboard {
   padding: 0;
   max-width: 100%;
-  color: var(--text-color);
+  color: var(--text-primary, #1e293b);
 }
 
 /* Bottom Grid Layout */
@@ -90,8 +90,8 @@
 
 /* Hero Section */
 .hero-section {
-  background: var(--card-bg) !important;
-  color: white;
+  background: #e1976f !important;
+  color: var(--text-primary, #1e293b);
   padding: 2rem;
   border-radius: 16px;
   margin-bottom: 2rem;
@@ -162,6 +162,23 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+        color: var(--text-primary, #1e293b);
+}
+.stat-card.blue {
+  background: linear-gradient(135deg, #e0f2ff 0%, #b3e0ff 100%) !important;
+  border-left-color: #00d4ff;
+}
+.stat-card.orange {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+  border-left-color: #ffc107;
+}
+.stat-card.purple {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e0c3fc 100%) !important;
+  border-left-color: #9c27b0;
+}
+.stat-card.green {
+  background: linear-gradient(135deg, #e0ffe0 0%, #b2ffd9 100%) !important;
+  border-left-color: #00e676;
 }
 
 .stat-card:hover {
@@ -200,7 +217,7 @@
 .stat-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary, #1e293b);
   margin: 0 0 0.25rem 0;
 }
 
@@ -213,7 +230,7 @@
 .stat-value-large {
   font-size: 2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #1e293b);
 }
 
 /* Charts Section */
@@ -250,7 +267,7 @@
 .chart-header h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary, #1e293b);
   margin: 0;
 }
 
@@ -278,7 +295,7 @@
 
 .mood-bar-fill {
   width: 20px;
-  background: var(--card-bg) !important;
+  background: #00d4ff !important;
   border-radius: 4px 4px 0 0;
   margin-bottom: 0.5rem;
   transition: height 0.3s ease;
@@ -308,7 +325,7 @@
 
 .activity-bar-fill {
   width: 100%;
-  background: linear-gradient(180deg, #00e676 0%, #00c853 100%);
+  background: #ffc107;
   border-radius: 4px 4px 0 0;
   transition: height 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);
@@ -435,7 +452,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+  background: #ffc107;
   border-radius: 4px;
   transition: width 0.3s ease;
   box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
@@ -443,7 +460,20 @@
 
 .progress-value {
   font-size: 0.875rem;
-  color: #ffffff;
+  color: var(--text-primary, #1e293b);
+/* Mood Distribution Pie Chart Segments */
+.circle-segment.excellent {
+  background: #10b981;
+}
+.circle-segment.good {
+  background: #3b82f6;
+}
+.circle-segment.okay {
+  background: #f59e0b;
+}
+.circle-segment.poor {
+  background: #ef4444;
+}
   font-weight: 600;
   align-self: flex-end;
 }
@@ -515,7 +545,7 @@
 
 .timeline-time {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-secondary, #64748b);
 }
 
 .timeline-btn {
