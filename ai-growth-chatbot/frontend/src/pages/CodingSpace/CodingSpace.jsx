@@ -1,96 +1,47 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import { Code, Play, Save, Share, Plus, Search, FileText, Folder, Terminal } from 'lucide-react';
 import './CodingSpace.css';
 
 const CodingSpace = () => {
   const [activeTab, setActiveTab] = useState('projects');
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: '',
+    language: '',
+    framework: '',
+  });
   const [selectedProject, setSelectedProject] = useState(null);
   const [code, setCode] = useState('// Welcome to Coding Space\n// Start coding here!\n\nfunction hello() {\n  console.log("Hello, World!");\n}\n\nhello();');
+  const [projects, setProjects] = useState({ projects: [], templates: [], snippets: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const projects = {
-    projects: [
-      {
-        id: 1,
-        name: 'React Todo App',
-        description: 'A simple todo application built with React and local storage.',
-        language: 'JavaScript',
-        framework: 'React',
-        lastModified: '2 hours ago',
-        status: 'active',
-        files: 3,
-        lines: 245
-      },
-      {
-        id: 2,
-        name: 'Python Data Analysis',
-        description: 'Data analysis project using pandas and matplotlib.',
-        language: 'Python',
-        framework: 'Pandas',
-        lastModified: '1 day ago',
-        status: 'completed',
-        files: 5,
-        lines: 432
-      },
-      {
-        id: 3,
-        name: 'Node.js API',
-        description: 'RESTful API with Express.js and MongoDB.',
-        language: 'JavaScript',
-        framework: 'Node.js',
-        lastModified: '3 days ago',
-        status: 'in-progress',
-        files: 8,
-        lines: 567
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Replace with actual API endpoints for projects, templates, snippets
+        // Example: await api.getProjects(), api.getTemplates(), api.getSnippets()
+        // For now, fallback to static if API not implemented
+        const userProjects = await api.getProfile(); // Replace with api.getProjects() if available
+        // You may need to adjust the response structure below
+        setProjects({
+          projects: userProjects.projects || [],
+          templates: userProjects.templates || [],
+          snippets: userProjects.snippets || [],
+        });
+      } catch (err) {
+        setError('Failed to load data.');
+        setProjects({ projects: [], templates: [], snippets: [] });
       }
-    ],
-    templates: [
-      {
-        id: 4,
-        name: 'React Starter',
-        description: 'Basic React application template with routing.',
-        language: 'JavaScript',
-        framework: 'React',
-        category: 'Frontend',
-        difficulty: 'Beginner'
-      },
-      {
-        id: 5,
-        name: 'Express API Template',
-        description: 'Node.js Express API with authentication.',
-        language: 'JavaScript',
-        framework: 'Express',
-        category: 'Backend',
-        difficulty: 'Intermediate'
-      },
-      {
-        id: 6,
-        name: 'Python Flask App',
-        description: 'Flask web application with database integration.',
-        language: 'Python',
-        framework: 'Flask',
-        category: 'Full Stack',
-        difficulty: 'Intermediate'
-      }
-    ],
-    snippets: [
-      {
-        id: 7,
-        name: 'Array Methods',
-        description: 'Common JavaScript array manipulation methods.',
-        language: 'JavaScript',
-        category: 'Utilities',
-        code: 'const arr = [1, 2, 3, 4, 5];\n// Map, filter, reduce examples'
-      },
-      {
-        id: 8,
-        name: 'API Fetch',
-        description: 'Async/await API call with error handling.',
-        language: 'JavaScript',
-        category: 'Network',
-        code: 'async function fetchData(url) {\n  try {\n    const response = await fetch(url);\n    return await response.json();\n  } catch (error) {\n    console.error(error);\n  }\n}'
-      }
-    ]
-  };
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   const getLanguageColor = (language) => {
     const colors = {
@@ -141,10 +92,47 @@ const CodingSpace = () => {
             <Search className="search-icon" />
             <input type="text" placeholder="Search projects..." />
           </div>
-          <button className="create-project-btn">
+          <button className="create-project-btn" onClick={() => setShowProjectModal(true)}>
             <Plus className="icon" />
             New Project
           </button>
+          {showProjectModal && (
+            <div className="modal-overlay" role="dialog" aria-modal="true">
+              <div className="add-reminder-modal">
+                <div className="modal-header" style={{background: 'linear-gradient(90deg, #667eea, #764ba2)'}}>
+                  <button className="modal-back" type="button" onClick={() => setShowProjectModal(false)} aria-label="Close">←</button>
+                  <h2 className="modal-title">Add Project</h2>
+                  <button className="modal-menu" type="button" aria-label="Menu">≡</button>
+                </div>
+                <div className="modal-card">
+                  <form onSubmit={e => {e.preventDefault(); setShowProjectModal(false);}}>
+                    <div className="modal-field">
+                      <label>Project Name<span className="req">*</span></label>
+                      <input type="text" value={newProject.name} onChange={e => setNewProject({...newProject, name: e.target.value})} required placeholder="Enter project name" />
+                    </div>
+                    <div className="modal-field">
+                      <label>Description<span className="req">*</span></label>
+                      <textarea value={newProject.description} onChange={e => setNewProject({...newProject, description: e.target.value})} required placeholder="Describe the project" rows="3" />
+                    </div>
+                    <div className="modal-row">
+                      <div className="modal-field">
+                        <label>Language<span className="req">*</span></label>
+                        <input type="text" value={newProject.language} onChange={e => setNewProject({...newProject, language: e.target.value})} required placeholder="e.g. JavaScript, Python" />
+                      </div>
+                      <div className="modal-field">
+                        <label>Framework<span className="req">*</span></label>
+                        <input type="text" value={newProject.framework} onChange={e => setNewProject({...newProject, framework: e.target.value})} required placeholder="e.g. React, Flask" />
+                      </div>
+                    </div>
+                    <div className="modal-actions">
+                      <button type="submit" className="primary">Save</button>
+                      <button type="button" className="secondary" onClick={() => setShowProjectModal(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -179,7 +167,11 @@ const CodingSpace = () => {
         </button>
       </div>
 
-      {activeTab === 'editor' ? (
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : error ? (
+        <div className="error-message">{error}</div>
+      ) : activeTab === 'editor' ? (
         <div className="code-editor-container">
           <div className="editor-toolbar">
             <div className="editor-info">
@@ -309,7 +301,7 @@ const CodingSpace = () => {
         </div>
       )}
 
-      {projects[activeTab] && projects[activeTab].length === 0 && (
+      {projects[activeTab] && projects[activeTab].length === 0 && !loading && !error && (
         <div className="empty-state">
           <Code className="empty-icon" />
           <h3>No {activeTab} found</h3>

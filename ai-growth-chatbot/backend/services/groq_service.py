@@ -6,7 +6,7 @@ from groq import GroqError
 
 load_dotenv()
 
-DEFAULT_GROQ_MODEL = os.getenv("GROQ_MODEL", "llama3-70b-8192")
+DEFAULT_GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # Lazily create Groq client only when needed
 _client = None

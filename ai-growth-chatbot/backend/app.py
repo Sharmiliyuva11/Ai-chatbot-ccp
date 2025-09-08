@@ -15,8 +15,10 @@ load_dotenv()
 from routes.auth_routes import auth_routes
 from routes.chatbot_routes import chatbot_routes
 from routes.reminder_routes import reminder_routes
+
 from routes.mindspace_routes import mindspace_bp
 from routes.pdf_routes import pdf_bp   # ✅ Updated (was pdf_routes before)
+from routes.roundtable_routes import roundtable_bp
 
 # Initialize OAuth after app creation
 from controllers.auth_controller import init_oauth
@@ -58,11 +60,13 @@ init_oauth(app)
 # ===============================
 # 🔹 Register Blueprints
 # ===============================
+
 app.register_blueprint(auth_routes, url_prefix="/api/auth")
 app.register_blueprint(chatbot_routes, url_prefix="/api/chatbot")
 app.register_blueprint(reminder_routes, url_prefix="/api/reminder")
 app.register_blueprint(mindspace_bp, url_prefix="/api/mindspace")
 app.register_blueprint(pdf_bp, url_prefix="/api/pdf")   # ✅ Fixed name
+app.register_blueprint(roundtable_bp, url_prefix="/api/roundtable")
 
 # ===============================
 # 🔹 Health Check Route

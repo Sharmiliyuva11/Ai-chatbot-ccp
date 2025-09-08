@@ -2,6 +2,26 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
 class ApiService {
+  // Roundtable (conference) endpoints
+  async getAllSessions() {
+    // GET /roundtable/sessions - returns all sessions (hosted by user and others)
+    return this.apiCall('/roundtable/sessions');
+  }
+
+  async createSession(sessionData) {
+    // POST /roundtable/sessions - create a new session
+    return this.apiCall('/roundtable/sessions', {
+      method: 'POST',
+      body: JSON.stringify(sessionData),
+    });
+  }
+
+  async joinSession(sessionId) {
+    // POST /roundtable/sessions/:id/join - join a session, notify conductor
+    return this.apiCall(`/roundtable/sessions/${sessionId}/join`, {
+      method: 'POST',
+    });
+  }
   constructor() {
     this.token = localStorage.getItem('token');
   }

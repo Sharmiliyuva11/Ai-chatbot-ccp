@@ -412,3 +412,47 @@ def change_password():
         })
     else:
         return jsonify({'success': False, 'message': 'Failed to update password'}), 500
+
+
+@auth_bp.route('/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    # Fields that can be updated
+    updatable_fields = ['name', 'phone', 'dateOfBirth', 'location', 'bio', 'emergencyContact']
+    update_data = {}
+    
+    for field in updatable_fields:
+        if field in data:
+            update_data[field] = data[field]
+    
+    # Validate email if provided (email should not be updatable for now)
+    if 'email' in data:
+        return jsonify({'success': False, 'message': 'Email cannot be updated'}), 400
+    
+    if not update_data:
+        return jsonify({'success': False, 'message': 'No valid fields to update'}), 400
+    
+    if User.update_user(user_id, update_data):
+        # Get updated user data
+        user = User.find_by_id(user_id)
+        return jsonify({
+            'success': True,
+            'message': 'Profile updated successfully',
+            'user': {
+                'id': str(user['_id']),
+                'name': user['name'],
+                'email': user['email'],
+                'username': user['username'],
+                'phone': user.get('phone'),
+                'dateOfBirth': user.get('dateOfBirth'),
+                'location': user.get('location'),
+                'bio': user.get('bio'),
+                'emergencyContact': user.get('emergencyContact'),
+                'created_at': user.get('created_at')
+            }
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Failed to update profile'}), 500

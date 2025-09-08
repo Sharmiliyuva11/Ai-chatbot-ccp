@@ -28,16 +28,47 @@ const SpeakUp = () => {
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
 
-  // Chat history state (initialize with welcome message)
-  const [chatHistory, setChatHistory] = useState([
-    {
-      id: 1,
-      type: 'bot',
-      message:
-        "Hello! I'm here to listen and support you. How are you feeling today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+  // Chat history state (dynamic from backend)
+  const [chatHistory, setChatHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    const fetchChatHistory = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Replace with actual API endpoint for chat history if available
+        // For now, use profile as placeholder
+        const profile = await api.getProfile();
+        if (profile && Array.isArray(profile.chatHistory)) {
+          setChatHistory(profile.chatHistory);
+        } else {
+          // Fallback to welcome message if no history
+          setChatHistory([
+            {
+              id: 1,
+              type: 'bot',
+              message: "Hello! I'm here to listen and support you. How are you feeling today?",
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          ]);
+        }
+      } catch (err) {
+        setError('Failed to load chat history.');
+        setChatHistory([
+          {
+            id: 1,
+            type: 'bot',
+            message: "Hello! I'm here to listen and support you. How are you feeling today?",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      setLoading(false);
+    };
+    fetchChatHistory();
+  }, []);
 
   const getTimestamp = () =>
     new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

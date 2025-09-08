@@ -1,78 +1,60 @@
 import React, { useState } from 'react';
 import { Users, MessageCircle, Calendar, Clock, Plus, Search } from 'lucide-react';
+import api from '../../services/api';
 import './Roundtable.css';
 
 const Roundtable = () => {
   const [activeTab, setActiveTab] = useState('ongoing');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newSession, setNewSession] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    maxParticipants: 10,
+    moderator: '',
+    category: ''
+  });
 
-  const sessions = {
-    ongoing: [
-      {
-        id: 1,
-        title: 'Anxiety Support Group',
-        description: 'A safe space to discuss anxiety management techniques and share experiences.',
-        participants: 12,
-        maxParticipants: 15,
-        moderator: 'Dr. Sarah Johnson',
-        time: '2:00 PM - 3:30 PM',
-        date: 'Today',
-        status: 'live',
-        category: 'Mental Health'
-      },
-      {
-        id: 2,
-        title: 'Mindfulness & Meditation',
-        description: 'Weekly guided meditation and mindfulness practice session.',
-        participants: 8,
-        maxParticipants: 20,
-        moderator: 'Michael Chen',
-        time: '6:00 PM - 7:00 PM',
-        date: 'Today',
-        status: 'starting-soon',
-        category: 'Wellness'
+  const [sessions, setSessions] = useState({ ongoing: [], upcoming: [], past: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Handler to open the create session modal
+  const openCreateSessionModal = () => setShowCreateModal(true);
+
+  // Get user info from localStorage
+  const user = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const fetchSessions = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Use new API endpoint for all sessions
+        const allSessions = await api.getAllSessions();
+        // Group sessions by status for tabs
+        const grouped = { ongoing: [], upcoming: [], past: [] };
+        allSessions.forEach(session => {
+          if (session.status === 'live') grouped.ongoing.push(session);
+          else if (session.status === 'starting-soon' || session.status === 'scheduled') grouped.upcoming.push(session);
+          else grouped.past.push(session);
+        });
+        setSessions(grouped);
+      } catch (err) {
+        setError('Failed to load sessions.');
+        setSessions({ ongoing: [], upcoming: [], past: [] });
       }
-    ],
-    upcoming: [
-      {
-        id: 3,
-        title: 'Depression Recovery Circle',
-        description: 'Peer support group for individuals dealing with depression.',
-        participants: 0,
-        maxParticipants: 12,
-        moderator: 'Dr. Emily Rodriguez',
-        time: '10:00 AM - 11:30 AM',
-        date: 'Tomorrow',
-        status: 'scheduled',
-        category: 'Mental Health'
-      },
-      {
-        id: 4,
-        title: 'Stress Management Workshop',
-        description: 'Learn practical techniques for managing workplace and daily stress.',
-        participants: 5,
-        maxParticipants: 25,
-        moderator: 'James Wilson',
-        time: '3:00 PM - 4:30 PM',
-        date: 'Dec 28',
-        status: 'scheduled',
-        category: 'Wellness'
-      }
-    ],
-    past: [
-      {
-        id: 5,
-        title: 'Self-Care Sunday',
-        description: 'Weekly self-care practices and wellness tips sharing.',
-        participants: 18,
-        maxParticipants: 20,
-        moderator: 'Lisa Thompson',
-        time: '11:00 AM - 12:00 PM',
-        date: 'Dec 22',
-        status: 'completed',
-        category: 'Wellness'
-      }
-    ]
-  };
+      setLoading(false);
+    };
+    fetchSessions();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -106,12 +88,64 @@ const Roundtable = () => {
             <Search className="search-icon" />
             <input type="text" placeholder="Search sessions..." />
           </div>
-          <button className="create-session-btn">
+          <button className="create-session-btn" onClick={() => setShowCreateModal(true)}>
             <Plus className="icon" />
             Create Session
           </button>
         </div>
       </div>
+
+      {showCreateModal && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="add-reminder-modal">
+            <div className="modal-header" style={{background: 'linear-gradient(90deg, #ff9800, #ff5e00)'}}>
+              <button className="modal-back" type="button" onClick={() => setShowCreateModal(false)} aria-label="Close">←</button>
+              <h2 className="modal-title">Create Session</h2>
+              <button className="modal-menu" type="button" aria-label="Menu">≡</button>
+            </div>
+            <div className="modal-card">
+              <form onSubmit={e => {e.preventDefault(); setShowCreateModal(false);}}>
+                <div className="modal-field">
+                  <label>Session Title<span className="req">*</span></label>
+                  <input type="text" value={newSession.title} onChange={e => setNewSession({...newSession, title: e.target.value})} required placeholder="Enter session title" />
+                </div>
+                <div className="modal-field">
+                  <label>Description<span className="req">*</span></label>
+                  <textarea value={newSession.description} onChange={e => setNewSession({...newSession, description: e.target.value})} required placeholder="Describe the session" rows="3" />
+                </div>
+                <div className="modal-row">
+                  <div className="modal-field">
+                    <label>Date<span className="req">*</span></label>
+                    <input type="date" value={newSession.date} onChange={e => setNewSession({...newSession, date: e.target.value})} required />
+                  </div>
+                  <div className="modal-field">
+                    <label>Time<span className="req">*</span></label>
+                    <input type="time" value={newSession.time} onChange={e => setNewSession({...newSession, time: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="modal-row">
+                  <div className="modal-field">
+                    <label>Max Participants<span className="req">*</span></label>
+                    <input type="number" min="2" max="100" value={newSession.maxParticipants} onChange={e => setNewSession({...newSession, maxParticipants: e.target.value})} required />
+                  </div>
+                  <div className="modal-field">
+                    <label>Moderator<span className="req">*</span></label>
+                    <input type="text" value={newSession.moderator} onChange={e => setNewSession({...newSession, moderator: e.target.value})} required placeholder="Moderator name" />
+                  </div>
+                </div>
+                <div className="modal-field">
+                  <label>Category<span className="req">*</span></label>
+                  <input type="text" value={newSession.category} onChange={e => setNewSession({...newSession, category: e.target.value})} required placeholder="e.g. Wellness, Mental Health" />
+                </div>
+                <div className="modal-actions">
+                  <button type="submit" className="primary">Save</button>
+                  <button type="button" className="secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="session-tabs">
         <button 
@@ -179,29 +213,32 @@ const Roundtable = () => {
             </div>
             
             <div className="session-actions">
-              {session.status === 'live' && (
-                <button className="join-btn live">
-                  <MessageCircle className="icon" />
-                  Join Now
-                </button>
-              )}
-              {session.status === 'starting-soon' && (
-                <button className="join-btn soon">
-                  <MessageCircle className="icon" />
-                  Join Session
-                </button>
-              )}
-              {session.status === 'scheduled' && (
-                <button className="join-btn scheduled">
-                  <Plus className="icon" />
-                  Register
-                </button>
-              )}
-              {session.status === 'completed' && (
-                <button className="join-btn completed" disabled>
-                  <MessageCircle className="icon" />
-                  View Summary
-                </button>
+              {/* If user is the moderator, show 'You are hosting' */}
+              {session.moderatorId === user.id ? (
+                <span className="host-label">You are hosting</span>
+              ) : (
+                <>
+                  {(session.status === 'live' || session.status === 'starting-soon' || session.status === 'scheduled') && (
+                    <button
+                      className={`join-btn ${session.status}`}
+                      onClick={() => handleJoinSession(session._id)}
+                      disabled={session.participants >= session.maxParticipants || joiningSessionId === session._id}
+                    >
+                      {joiningSessionId === session._id ? 'Joining...' : (
+                        <>
+                          <MessageCircle className="icon" />
+                          {session.status === 'live' ? 'Join Now' : session.status === 'starting-soon' ? 'Join Session' : 'Register'}
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {session.status === 'completed' && (
+                    <button className="join-btn completed" disabled>
+                      <MessageCircle className="icon" />
+                      View Summary
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -213,7 +250,7 @@ const Roundtable = () => {
           <Users className="empty-icon" />
           <h3>No sessions found</h3>
           <p>There are no {activeTab} sessions at the moment.</p>
-          <button className="create-session-btn">
+          <button className="create-session-btn" onClick={openCreateSessionModal}>
             <Plus className="icon" />
             Create New Session
           </button>

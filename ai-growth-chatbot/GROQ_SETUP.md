@@ -27,7 +27,7 @@ Add your Groq API key to the `.env` file:
 
 ```
 GROQ_API_KEY="your_actual_groq_api_key_here"
-GROQ_MODEL="llama3-70b-8192"
+GROQ_MODEL="llama-3.3-70b-versatile"
 AI_PROVIDER="groq"
 ```
 

@@ -1,7 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from pymongo import MongoClient
 from datetime import datetime
-from email_service import email_service
+from services.email_service import email_service
 import pytz
 import os
 
