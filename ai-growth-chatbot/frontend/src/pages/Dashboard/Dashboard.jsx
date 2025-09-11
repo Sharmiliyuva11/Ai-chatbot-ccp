@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   Users, 
@@ -10,74 +10,173 @@ import {
   Award
 } from 'lucide-react';
 import Chatbot from '../../components/Chatbot/Chatbot';
+import ApiService from '../../services/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const stats = [
-    {
-      title: 'Chat Sessions',
-      value: '22',
-      subtitle: 'Total conversations',
-      icon: MessageSquare,
-      color: 'blue',
-      trend: '+12%'
-    },
-    {
-      title: 'Active Tasks',
-      value: '1',
-      subtitle: 'Pending operations',
-      icon: Activity,
-      color: 'orange',
-      trend: '-5%'
-    },
-    {
-      title: 'Meditation',
-      value: '0',
-      subtitle: 'Sessions completed',
-      icon: Bell,
-      color: 'purple',
-      trend: '0%'
-    },
-    {
-      title: 'Community',
-      value: '0',
-      subtitle: 'Group joined',
-      icon: Users,
-      color: 'green',
-      trend: '0%'
-    }
-  ];
+  const [stats, setStats] = useState([]);
+  const [moodData, setMoodData] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState({
+    mood: 8,
+    stress: 1
+  });
 
-  const moodData = [
-    { day: 'Mon', value: 7 },
-    { day: 'Tue', value: 8 },
-    { day: 'Wed', value: 6 },
-    { day: 'Thu', value: 9 },
-    { day: 'Fri', value: 7 },
-    { day: 'Sat', value: 8 },
-    { day: 'Sun', value: 9 }
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const activities = [
-    {
-      type: 'Morning meditation completed',
-      time: '2 HR • 14 MINUTES',
-      status: 'completed',
-      color: 'green'
-    },
-    {
-      type: 'Therapy chat session',
-      time: '1 DAY • 12 MINUTES',
-      status: 'completed',
-      color: 'blue'
-    },
-    {
-      type: 'Evening wind down',
-      time: '3 DAY • 8 MINUTES',
-      status: 'pending',
-      color: 'purple'
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch dashboard stats
+      const statsResponse = await ApiService.getDashboardStats();
+      if (statsResponse.success) {
+        const { stats: dbStats } = statsResponse;
+        setDashboardStats({
+          mood: dbStats.mood || 8,
+          stress: dbStats.stress || 1
+        });
+        
+        // Update stats array with real data
+        setStats([
+          {
+            title: 'Chat Sessions',
+            value: dbStats.chatSessions.toString(),
+            subtitle: 'Total conversations',
+            icon: MessageSquare,
+            color: 'blue',
+            trend: dbStats.chatSessions > 0 ? '+12%' : '0%'
+          },
+          {
+            title: 'Active Tasks',
+            value: dbStats.activeTasks.toString(),
+            subtitle: 'Pending operations',
+            icon: Activity,
+            color: 'orange',
+            trend: dbStats.activeTasks > 0 ? '+5%' : '0%'
+          },
+          {
+            title: 'Meditation',
+            value: dbStats.meditationSessions.toString(),
+            subtitle: 'Sessions completed',
+            icon: Bell,
+            color: 'purple',
+            trend: '0%'
+          },
+          {
+            title: 'Community',
+            value: dbStats.communityGroups.toString(),
+            subtitle: 'Groups joined',
+            icon: Users,
+            color: 'green',
+            trend: '0%'
+          }
+        ]);
+      }
+
+      // Fetch mood data
+      const moodResponse = await ApiService.getMoodData();
+      if (moodResponse.success) {
+        setMoodData(moodResponse.moodData);
+      }
+
+      // Fetch recent activity
+      const activityResponse = await ApiService.getRecentActivity();
+      if (activityResponse.success) {
+        const formattedActivities = activityResponse.activities.map(activity => ({
+          type: activity.title,
+          time: formatActivityTime(activity.time),
+          status: activity.status,
+          color: activity.color
+        }));
+        setActivities(formattedActivities);
+      }
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Fallback to default data on error
+      setStats([
+        {
+          title: 'Chat Sessions',
+          value: '0',
+          subtitle: 'Total conversations',
+          icon: MessageSquare,
+          color: 'blue',
+          trend: '0%'
+        },
+        {
+          title: 'Active Tasks',
+          value: '0',
+          subtitle: 'Pending operations',
+          icon: Activity,
+          color: 'orange',
+          trend: '0%'
+        },
+        {
+          title: 'Meditation',
+          value: '0',
+          subtitle: 'Sessions completed',
+          icon: Bell,
+          color: 'purple',
+          trend: '0%'
+        },
+        {
+          title: 'Community',
+          value: '0',
+          subtitle: 'Groups joined',
+          icon: Users,
+          color: 'green',
+          trend: '0%'
+        }
+      ]);
+      setMoodData([
+        { day: 'Mon', value: 7 },
+        { day: 'Tue', value: 8 },
+        { day: 'Wed', value: 6 },
+        { day: 'Thu', value: 9 },
+        { day: 'Fri', value: 7 },
+        { day: 'Sat', value: 8 },
+        { day: 'Sun', value: 9 }
+      ]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const formatActivityTime = (timeStr) => {
+    try {
+      const date = new Date(timeStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) {
+        return `${diffDays} DAY${diffDays > 1 ? 'S' : ''} AGO`;
+      } else if (diffHours > 0) {
+        return `${diffHours} HR${diffHours > 1 ? 'S' : ''} AGO`;
+      } else {
+        return `${Math.max(1, diffMins)} MIN${diffMins > 1 ? 'S' : ''} AGO`;
+      }
+    } catch {
+      return timeStr;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -90,11 +189,11 @@ const Dashboard = () => {
         </div>
         <div className="hero-stats">
           <div className="stat-item">
-            <span className="stat-value">8/10</span>
+            <span className="stat-value">{dashboardStats.mood}/10</span>
             <span className="stat-label">Mood</span>
           </div>
           <div className="stat-item">
-            <span className="stat-value">1/10</span>
+            <span className="stat-value">{dashboardStats.stress}/10</span>
             <span className="stat-label">Stress</span>
           </div>
         </div>

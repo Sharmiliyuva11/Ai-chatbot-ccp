@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
-import { 
-  Shield, 
-  Phone, 
-  MessageCircle, 
-  MapPin, 
-  Clock, 
+import {
+  Shield,
+  Phone,
+  MessageCircle,
+  MapPin,
+  Clock,
   Heart,
   AlertTriangle,
   ExternalLink,
   Search,
   Filter
 } from 'lucide-react';
+import api from '../../services/api';
 import './SafeLink.css';
 
 const SafeLink = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [localResults, setLocalResults] = useState([]);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const emergencyContacts = [
     {
@@ -122,6 +127,35 @@ const SafeLink = () => {
 
   const handleText = (number) => {
     window.open(`sms:${number}`, '_self');
+  };
+
+  const handleLocalSearch = async () => {
+    if (!localSearchTerm.trim()) {
+      setLocalError('Please enter a zip code or city name.');
+      setLocalResults([]);
+      return;
+    }
+    setLocalLoading(true);
+    setLocalError('');
+    setLocalResults([]);
+    try {
+      // Call the backend API to search for local mental health support services
+      const response = await api.searchLocalSupport(localSearchTerm.trim(), 'all');
+
+      if (response.success && response.results) {
+        setLocalResults(response.results);
+        if (response.results.length === 0) {
+          setLocalError('No local support found for the given location.');
+        }
+      } else {
+        setLocalError(response.error || 'Failed to search local support. Please try again.');
+      }
+    } catch (err) {
+      console.error('Local search error:', err);
+      setLocalError('Failed to search local support. Please try again.');
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
   return (
@@ -277,13 +311,32 @@ const SafeLink = () => {
               </div>
             </div>
             <div className="location-input">
-              <input type="text" placeholder="Enter your zip code or city" />
-              <button className="search-btn">
+              <input 
+                type="text" 
+                placeholder="Enter your zip code or city" 
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+              />
+              <button className="search-btn" onClick={handleLocalSearch}>
                 <Search className="btn-icon" />
                 Search
               </button>
             </div>
           </div>
+          {localLoading && <p>Loading local support...</p>}
+          {localError && <p className="error-message">{localError}</p>}
+          {localResults.length > 0 && (
+            <div className="local-results">
+              <h3>Local Support Results</h3>
+              <ul>
+                {localResults.map((item, index) => (
+                  <li key={index}>
+                    <strong>{item.name || item.title}</strong>: {item.description}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
 
         <section className="safety-tips">

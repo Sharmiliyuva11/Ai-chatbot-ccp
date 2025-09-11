@@ -19,6 +19,8 @@ from routes.reminder_routes import reminder_routes
 from routes.mindspace_routes import mindspace_bp
 from routes.pdf_routes import pdf_bp   # ✅ Updated (was pdf_routes before)
 from routes.roundtable_routes import roundtable_bp
+from routes.coding_routes import coding_bp
+from routes.local_support_routes import local_support_bp
 
 # Initialize OAuth after app creation
 from controllers.auth_controller import init_oauth
@@ -34,6 +36,8 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     os.getenv('CLIENT_URL', 'http://localhost:5174')
 ])
 
@@ -67,6 +71,8 @@ app.register_blueprint(reminder_routes, url_prefix="/api/reminder")
 app.register_blueprint(mindspace_bp, url_prefix="/api/mindspace")
 app.register_blueprint(pdf_bp, url_prefix="/api/pdf")   # ✅ Fixed name
 app.register_blueprint(roundtable_bp, url_prefix="/api/roundtable")
+app.register_blueprint(coding_bp, url_prefix="/api/coding")
+app.register_blueprint(local_support_bp, url_prefix="/api/local-support")
 
 # ===============================
 # 🔹 Health Check Route

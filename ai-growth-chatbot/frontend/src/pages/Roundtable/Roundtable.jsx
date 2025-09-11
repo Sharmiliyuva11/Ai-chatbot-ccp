@@ -19,6 +19,7 @@ const Roundtable = () => {
   const [sessions, setSessions] = useState({ ongoing: [], upcoming: [], past: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [joiningSessionId, setJoiningSessionId] = useState(null);
 
   // Handler to open the create session modal
   const openCreateSessionModal = () => setShowCreateModal(true);
@@ -38,7 +39,8 @@ const Roundtable = () => {
       setError('');
       try {
         // Use new API endpoint for all sessions
-        const allSessions = await api.getAllSessions();
+        const response = await api.getAllSessions();
+        const allSessions = response.sessions || [];
         // Group sessions by status for tabs
         const grouped = { ongoing: [], upcoming: [], past: [] };
         allSessions.forEach(session => {
@@ -48,7 +50,8 @@ const Roundtable = () => {
         });
         setSessions(grouped);
       } catch (err) {
-        setError('Failed to load sessions.');
+        console.error('Error loading sessions:', err);
+        setError('Failed to load sessions. ' + (err.message || 'Please try again.'));
         setSessions({ ongoing: [], upcoming: [], past: [] });
       }
       setLoading(false);
@@ -73,6 +76,33 @@ const Roundtable = () => {
       case 'scheduled': return 'Scheduled';
       case 'completed': return 'Completed';
       default: return status;
+    }
+  };
+
+  const handleJoinSession = async (sessionId) => {
+    try {
+      setJoiningSessionId(sessionId);
+      const response = await api.joinSession(sessionId);
+      if (response.success) {
+        // Refresh sessions after joining
+        const sessionsResponse = await api.getAllSessions();
+        const allSessions = sessionsResponse.sessions || [];
+        const grouped = { ongoing: [], upcoming: [], past: [] };
+        allSessions.forEach(session => {
+          if (session.status === 'live') grouped.ongoing.push(session);
+          else if (session.status === 'starting-soon' || session.status === 'scheduled') grouped.upcoming.push(session);
+          else grouped.past.push(session);
+        });
+        setSessions(grouped);
+        alert('Successfully joined the session!');
+      } else {
+        alert('Failed to join session: ' + (response.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error joining session:', error);
+      alert('Error joining session: ' + error.message);
+    } finally {
+      setJoiningSessionId(null);
     }
   };
 
@@ -104,44 +134,75 @@ const Roundtable = () => {
               <button className="modal-menu" type="button" aria-label="Menu">≡</button>
             </div>
             <div className="modal-card">
-              <form onSubmit={e => {e.preventDefault(); setShowCreateModal(false);}}>
-                <div className="modal-field">
-                  <label>Session Title<span className="req">*</span></label>
-                  <input type="text" value={newSession.title} onChange={e => setNewSession({...newSession, title: e.target.value})} required placeholder="Enter session title" />
-                </div>
-                <div className="modal-field">
-                  <label>Description<span className="req">*</span></label>
-                  <textarea value={newSession.description} onChange={e => setNewSession({...newSession, description: e.target.value})} required placeholder="Describe the session" rows="3" />
-                </div>
-                <div className="modal-row">
-                  <div className="modal-field">
-                    <label>Date<span className="req">*</span></label>
-                    <input type="date" value={newSession.date} onChange={e => setNewSession({...newSession, date: e.target.value})} required />
-                  </div>
-                  <div className="modal-field">
-                    <label>Time<span className="req">*</span></label>
-                    <input type="time" value={newSession.time} onChange={e => setNewSession({...newSession, time: e.target.value})} required />
-                  </div>
-                </div>
-                <div className="modal-row">
-                  <div className="modal-field">
-                    <label>Max Participants<span className="req">*</span></label>
-                    <input type="number" min="2" max="100" value={newSession.maxParticipants} onChange={e => setNewSession({...newSession, maxParticipants: e.target.value})} required />
-                  </div>
-                  <div className="modal-field">
-                    <label>Moderator<span className="req">*</span></label>
-                    <input type="text" value={newSession.moderator} onChange={e => setNewSession({...newSession, moderator: e.target.value})} required placeholder="Moderator name" />
-                  </div>
-                </div>
-                <div className="modal-field">
-                  <label>Category<span className="req">*</span></label>
-                  <input type="text" value={newSession.category} onChange={e => setNewSession({...newSession, category: e.target.value})} required placeholder="e.g. Wellness, Mental Health" />
-                </div>
-                <div className="modal-actions">
-                  <button type="submit" className="primary">Save</button>
-                  <button type="button" className="secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
-                </div>
-              </form>
+<form onSubmit={async e => {
+  e.preventDefault();
+  try {
+    const response = await api.createSession(newSession);
+    if (response.success) {
+      // Refresh sessions list after creation
+      const sessionsResponse = await api.getAllSessions();
+      const allSessions = sessionsResponse.sessions || [];
+      const grouped = { ongoing: [], upcoming: [], past: [] };
+      allSessions.forEach(session => {
+        if (session.status === 'live') grouped.ongoing.push(session);
+        else if (session.status === 'starting-soon' || session.status === 'scheduled') grouped.upcoming.push(session);
+        else grouped.past.push(session);
+      });
+      setSessions(grouped);
+      setShowCreateModal(false);
+      setNewSession({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        maxParticipants: 10,
+        moderator: '',
+        category: ''
+      });
+    } else {
+      alert('Failed to create session: ' + (response.message || 'Unknown error'));
+    }
+  } catch (error) {
+    alert('Error creating session: ' + error.message);
+  }
+}}>
+  <div className="modal-field">
+    <label>Session Title<span className="req">*</span></label>
+    <input type="text" value={newSession.title} onChange={e => setNewSession({...newSession, title: e.target.value})} required placeholder="Enter session title" />
+  </div>
+  <div className="modal-field">
+    <label>Description<span className="req">*</span></label>
+    <textarea value={newSession.description} onChange={e => setNewSession({...newSession, description: e.target.value})} required placeholder="Describe the session" rows="3" />
+  </div>
+  <div className="modal-row">
+    <div className="modal-field">
+      <label>Date<span className="req">*</span></label>
+      <input type="date" value={newSession.date} onChange={e => setNewSession({...newSession, date: e.target.value})} required />
+    </div>
+    <div className="modal-field">
+      <label>Time<span className="req">*</span></label>
+      <input type="time" value={newSession.time} onChange={e => setNewSession({...newSession, time: e.target.value})} required />
+    </div>
+  </div>
+  <div className="modal-row">
+    <div className="modal-field">
+      <label>Max Participants<span className="req">*</span></label>
+      <input type="number" min="2" max="100" value={newSession.maxParticipants} onChange={e => setNewSession({...newSession, maxParticipants: e.target.value})} required />
+    </div>
+    <div className="modal-field">
+      <label>Moderator<span className="req">*</span></label>
+      <input type="text" value={newSession.moderator} onChange={e => setNewSession({...newSession, moderator: e.target.value})} required placeholder="Moderator name" />
+    </div>
+  </div>
+  <div className="modal-field">
+    <label>Category<span className="req">*</span></label>
+    <input type="text" value={newSession.category} onChange={e => setNewSession({...newSession, category: e.target.value})} required placeholder="e.g. Wellness, Mental Health" />
+  </div>
+  <div className="modal-actions">
+    <button type="submit" className="primary">Save</button>
+    <button type="button" className="secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
+  </div>
+</form>
             </div>
           </div>
         </div>

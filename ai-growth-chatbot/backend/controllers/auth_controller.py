@@ -368,6 +368,15 @@ def get_profile():
             'name': user['name'],
             'email': user['email'],
             'username': user['username'],
+            'phone': user.get('phone', ''),
+            'dateOfBirth': user.get('dateOfBirth', ''),
+            'location': user.get('location', ''),
+            'bio': user.get('bio', ''),
+            'emergencyContact': user.get('emergencyContact', {
+                'name': '',
+                'relationship': '',
+                'phone': ''
+            }),
             'oauth_provider': user.get('oauth_provider'),
             'created_at': user.get('created_at')
         }
@@ -417,42 +426,85 @@ def change_password():
 @auth_bp.route('/profile', methods=['PUT'])
 @jwt_required()
 def update_profile():
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+
+        print(f"🔄 Profile update request for user_id: {user_id}")
+        print(f"📦 Received data: {data}")
+
+        # Fields that can be updated
+        updatable_fields = ['name', 'phone', 'dateOfBirth', 'location', 'bio', 'emergencyContact']
+        update_data = {}
+
+        for field in updatable_fields:
+            if field in data:
+                update_data[field] = data[field]
+
+        print(f"📝 Filtered update data: {update_data}")
+
+        # Validate email if provided (email should not be updatable for now)
+        if 'email' in data:
+            print("❌ Email update attempted - not allowed")
+            return jsonify({'success': False, 'message': 'Email cannot be updated'}), 400
+
+        if not update_data:
+            print("❌ No valid fields to update")
+            return jsonify({'success': False, 'message': 'No valid fields to update'}), 400
+
+        # Attempt to update user
+        print(f"🔄 Calling User.update_user with user_id: {user_id}")
+        update_result = User.update_user(user_id, update_data)
+        print(f"📊 Update result: {update_result}")
+
+        if update_result:
+            # Get updated user data
+            user = User.find_by_id(user_id)
+            print(f"✅ Profile updated successfully for user: {user_id}")
+            return jsonify({
+                'success': True,
+                'message': 'Profile updated successfully',
+                'user': {
+                    'id': str(user['_id']),
+                    'name': user['name'],
+                    'email': user['email'],
+                    'username': user['username'],
+                    'phone': user.get('phone'),
+                    'dateOfBirth': user.get('dateOfBirth'),
+                    'location': user.get('location'),
+                    'bio': user.get('bio'),
+                    'emergencyContact': user.get('emergencyContact'),
+                    'created_at': user.get('created_at')
+                }
+            })
+        else:
+            print(f"❌ Failed to update profile for user: {user_id}")
+            return jsonify({'success': False, 'message': 'Failed to update profile'}), 500
+
+    except Exception as e:
+        print(f"💥 Exception in update_profile: {str(e)}")
+        print(f"💥 Exception type: {type(e)}")
+        import traceback
+        print(f"💥 Traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'message': f'Internal server error: {str(e)}'}), 500
+
+
+@auth_bp.route('/profile/stats', methods=['GET'])
+@jwt_required()
+def get_profile_stats():
+    """Get user profile statistics for the dashboard"""
     user_id = get_jwt_identity()
-    data = request.get_json()
     
-    # Fields that can be updated
-    updatable_fields = ['name', 'phone', 'dateOfBirth', 'location', 'bio', 'emergencyContact']
-    update_data = {}
+    # For now, return mock stats. In a real implementation, 
+    # you would calculate these from user's actual data
+    stats = {
+        'daysActive': 15,
+        'goalsCompleted': 8,
+        'moodStreak': 7,
+        'sessions': 12
+    }
     
-    for field in updatable_fields:
-        if field in data:
-            update_data[field] = data[field]
-    
-    # Validate email if provided (email should not be updatable for now)
-    if 'email' in data:
-        return jsonify({'success': False, 'message': 'Email cannot be updated'}), 400
-    
-    if not update_data:
-        return jsonify({'success': False, 'message': 'No valid fields to update'}), 400
-    
-    if User.update_user(user_id, update_data):
-        # Get updated user data
-        user = User.find_by_id(user_id)
-        return jsonify({
-            'success': True,
-            'message': 'Profile updated successfully',
-            'user': {
-                'id': str(user['_id']),
-                'name': user['name'],
-                'email': user['email'],
-                'username': user['username'],
-                'phone': user.get('phone'),
-                'dateOfBirth': user.get('dateOfBirth'),
-                'location': user.get('location'),
-                'bio': user.get('bio'),
-                'emergencyContact': user.get('emergencyContact'),
-                'created_at': user.get('created_at')
-            }
-        })
-    else:
-        return jsonify({'success': False, 'message': 'Failed to update profile'}), 500
+    return jsonify({
+        'success': True,
+        'stats': stats
+    })

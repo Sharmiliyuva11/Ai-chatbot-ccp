@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  MapPin, 
-  Edit3, 
+import React, { useState, useEffect } from 'react';
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  Edit3,
   Camera,
   Save,
   X,
@@ -14,52 +14,124 @@ import {
   TrendingUp,
   Heart
 } from 'lucide-react';
+import ApiService from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: 'XXXX',
-    email: 'XXXX@example.com',
-    phone: '+1 (555) 123-4567',
-    dateOfBirth: '1990-05-15',
-    location: 'New York, NY',
-    bio: 'Mental health advocate and wellness enthusiast. Passionate about helping others on their journey to better mental health.',
+    name: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    location: '',
+    bio: '',
     emergencyContact: {
-      name: 'Jane Doe',
-      relationship: 'Sister',
-      phone: '+1 (555) 987-6543'
+      name: '',
+      relationship: '',
+      phone: ''
     }
   });
 
   const [editData, setEditData] = useState({ ...profileData });
+  const [stats, setStats] = useState([]);
 
-  const stats = [
-    {
-      icon: Calendar,
-      label: 'Days Active',
-      value: '45',
-      color: 'blue'
-    },
-    {
-      icon: Target,
-      label: 'Goals Completed',
-      value: '12',
-      color: 'green'
-    },
-    {
-      icon: TrendingUp,
-      label: 'Mood Streak',
-      value: '7 days',
-      color: 'purple'
-    },
-    {
-      icon: Heart,
-      label: 'Sessions',
-      value: '28',
-      color: 'red'
+  useEffect(() => {
+    fetchProfileData();
+  }, []);
+
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch user profile
+      const profileResponse = await ApiService.getProfile();
+      if (profileResponse.success) {
+        const user = profileResponse.user;
+        const updatedProfileData = {
+          name: user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          dateOfBirth: user.dateOfBirth || '',
+          location: user.location || '',
+          bio: user.bio || '',
+          emergencyContact: user.emergencyContact || {
+            name: '',
+            relationship: '',
+            phone: ''
+          }
+        };
+        setProfileData(updatedProfileData);
+        setEditData(updatedProfileData);
+      }
+
+      // Fetch profile stats
+      const statsResponse = await ApiService.getUserProfileStats();
+      if (statsResponse.success) {
+        const { stats: profileStats } = statsResponse;
+        setStats([
+          {
+            icon: Calendar,
+            label: 'Days Active',
+            value: profileStats.daysActive.toString(),
+            color: 'blue'
+          },
+          {
+            icon: Target,
+            label: 'Goals Completed',
+            value: profileStats.goalsCompleted.toString(),
+            color: 'green'
+          },
+          {
+            icon: TrendingUp,
+            label: 'Mood Streak',
+            value: `${profileStats.moodStreak} days`,
+            color: 'purple'
+          },
+          {
+            icon: Heart,
+            label: 'Sessions',
+            value: profileStats.sessions.toString(),
+            color: 'red'
+          }
+        ]);
+      }
+
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      // Set default empty data on error
+      setStats([
+        {
+          icon: Calendar,
+          label: 'Days Active',
+          value: '0',
+          color: 'blue'
+        },
+        {
+          icon: Target,
+          label: 'Goals Completed',
+          value: '0',
+          color: 'green'
+        },
+        {
+          icon: TrendingUp,
+          label: 'Mood Streak',
+          value: '0 days',
+          color: 'purple'
+        },
+        {
+          icon: Heart,
+          label: 'Sessions',
+          value: '0',
+          color: 'red'
+        }
+      ]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const achievements = [
     {
@@ -132,9 +204,35 @@ const Profile = () => {
     setEditData({ ...profileData });
   };
 
-  const handleSave = () => {
-    setProfileData({ ...editData });
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      console.log('Saving profile data:', editData);
+
+      // Create a copy of editData without the email field (email cannot be updated)
+      const { email, ...updateData } = editData;
+      console.log('Update data (excluding email):', updateData);
+
+      const response = await ApiService.updateProfile(updateData);
+
+      if (response.success) {
+        console.log('Profile updated successfully:', response);
+        setProfileData({ ...editData });
+        setIsEditing(false);
+        // Show success message
+        alert('Profile updated successfully!');
+        // Refetch data to ensure consistency
+        await fetchProfileData();
+      } else {
+        console.error('Failed to update profile:', response);
+        alert('Failed to update profile: ' + (response.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -170,14 +268,25 @@ const Profile = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="profile">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="profile">
       <div className="profile-header">
         <div className="profile-banner">
           <div className="profile-avatar-section">
             <div className="profile-avatar">
-              <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" 
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
                 alt="Profile"
               />
               <button className="avatar-edit-btn">
@@ -201,9 +310,9 @@ const Profile = () => {
               </button>
             ) : (
               <div className="edit-actions">
-                <button className="save-btn" onClick={handleSave}>
+                <button className="save-btn" onClick={handleSave} disabled={saving}>
                   <Save className="icon" />
-                  Save
+                  {saving ? 'Saving...' : 'Save'}
                 </button>
                 <button className="cancel-btn" onClick={handleCancel}>
                   <X className="icon" />
@@ -258,6 +367,9 @@ const Profile = () => {
                     type="email"
                     value={editData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
+                    disabled
+                    style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+                    title="Email cannot be changed"
                   />
                 ) : (
                   <div className="form-value">
@@ -400,9 +512,10 @@ const Profile = () => {
                       <span className="achievement-date">Earned {achievement.date}</span>
                     ) : (
                       <div className="achievement-progress">
-                        <div className="progress-bar">
-                          <div 
-                            className="progress-fill" 
+                        <div
+                          className="progress-bar">
+                          <div
+                            className="progress-fill"
                             style={{ width: `${(achievement.progress / 20) * 100}%` }}
                           ></div>
                         </div>

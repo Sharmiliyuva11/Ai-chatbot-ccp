@@ -22,6 +22,13 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  async deleteSession(sessionId) {
+    // DELETE /roundtable/sessions/:id - delete a session
+    return this.apiCall(`/roundtable/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+  }
   constructor() {
     this.token = localStorage.getItem('token');
   }
@@ -38,6 +45,11 @@ class ApiService {
   // Generic API call method with resilient JSON handling
   async apiCall(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = localStorage.getItem('token');
+
+    console.log(`🔄 API Call: ${options.method || 'GET'} ${url}`);
+    console.log('🔑 Token present:', !!token);
+
     const config = {
       headers: this.getAuthHeaders(),
       ...options,
@@ -46,19 +58,40 @@ class ApiService {
     try {
       const response = await fetch(url, config);
       let data;
+
+      console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+
       try {
         data = await response.json();
-      } catch (_) {
-        data = { success: false, message: `HTTP ${response.status}` };
+        console.log('📦 Response data:', data);
+      } catch (jsonError) {
+        console.warn('⚠️ Failed to parse JSON response:', jsonError);
+        data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
       }
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        const errorMessage = data.message || `HTTP ${response.status}: ${response.statusText}`;
+        console.error('❌ API Error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
-      console.error('API call failed:', error);
+      console.error('💥 API call failed:', error);
+
+      // Provide more specific error messages
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to server. Please check if the backend is running.');
+      } else if (error.message.includes('401')) {
+        throw new Error('Authentication error: Please log in again.');
+      } else if (error.message.includes('403')) {
+        throw new Error('Access denied: You do not have permission to access this resource.');
+      } else if (error.message.includes('404')) {
+        throw new Error('Not found: The requested resource was not found.');
+      } else if (error.message.includes('500')) {
+        throw new Error('Server error: Internal server error occurred.');
+      }
+
       throw error;
     }
   }
@@ -201,6 +234,121 @@ class ApiService {
 
   async getMindSpaceCategories() {
     return this.apiCall('/mindspace/categories');
+  }
+
+  // Coding endpoints
+  async getProjects() {
+    return this.apiCall('/coding/projects');
+  }
+
+  async createProject(projectData) {
+    return this.apiCall('/coding/projects', {
+      method: 'POST',
+      body: JSON.stringify(projectData),
+    });
+  }
+
+  async updateProject(projectId, projectData) {
+    return this.apiCall(`/coding/projects/${projectId}`, {
+      method: 'PUT',
+      body: JSON.stringify(projectData),
+    });
+  }
+
+  async deleteProject(projectId) {
+    return this.apiCall(`/coding/projects/${projectId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getTemplates() {
+    return this.apiCall('/coding/templates');
+  }
+
+  async createTemplate(templateData) {
+    return this.apiCall('/coding/templates', {
+      method: 'POST',
+      body: JSON.stringify(templateData),
+    });
+  }
+
+  async deleteTemplate(templateId) {
+    return this.apiCall(`/coding/templates/${templateId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getSnippets() {
+    return this.apiCall('/coding/snippets');
+  }
+
+  async createSnippet(snippetData) {
+    return this.apiCall('/coding/snippets', {
+      method: 'POST',
+      body: JSON.stringify(snippetData),
+    });
+  }
+
+  async deleteSnippet(snippetId) {
+    return this.apiCall(`/coding/snippets/${snippetId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Code execution endpoints
+  async executeCode(codeData) {
+    return this.apiCall('/coding/execute', {
+      method: 'POST',
+      body: JSON.stringify(codeData),
+    });
+  }
+
+  async getSupportedLanguages() {
+    return this.apiCall('/coding/languages');
+  }
+
+  async validateCode(codeData) {
+    return this.apiCall('/coding/validate', {
+      method: 'POST',
+      body: JSON.stringify(codeData),
+    });
+  }
+
+  async executeSnippet(snippetId, inputData = '') {
+    return this.apiCall(`/coding/snippets/${snippetId}/execute`, {
+      method: 'POST',
+      body: JSON.stringify({ input: inputData }),
+    });
+  }
+
+  // Profile update method
+  async updateProfile(profileData) {
+    return this.apiCall('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  // Get user profile stats (placeholder - implement in backend)
+  async getUserProfileStats() {
+    return this.apiCall('/auth/profile/stats');
+  }
+
+  // Local Support endpoints
+  async searchLocalSupport(location, serviceType = 'all') {
+    const params = new URLSearchParams({
+      location: location,
+      service_type: serviceType
+    });
+    return this.apiCall(`/local-support/search?${params.toString()}`);
+  }
+
+  async getLocalSupportServiceTypes() {
+    return this.apiCall('/local-support/service-types');
+  }
+
+  async getLocalSupportLocations() {
+    return this.apiCall('/local-support/supported-locations');
   }
 
   // Logout
