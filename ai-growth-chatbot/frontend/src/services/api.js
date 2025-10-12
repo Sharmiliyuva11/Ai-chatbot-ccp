@@ -23,6 +23,13 @@ class ApiService {
     });
   }
 
+  async startSession(sessionId) {
+    // POST /roundtable/sessions/:id/start - mark session live and return meeting info
+    return this.apiCall(`/roundtable/sessions/${sessionId}/start`, {
+      method: 'POST',
+    });
+  }
+
   async deleteSession(sessionId) {
     // DELETE /roundtable/sessions/:id - delete a session
     return this.apiCall(`/roundtable/sessions/${sessionId}`, {
@@ -81,7 +88,11 @@ class ApiService {
 
       // Provide more specific error messages
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Network error: Unable to connect to server. Please check if the backend is running.');
+        // Throw a concise, structured network error so pages can opt-in to
+        // showing a detailed user-facing message (for example, CodingSpace).
+        const netErr = new Error('Network error');
+        netErr.code = 'NETWORK_ERROR';
+        throw netErr;
       } else if (error.message.includes('401')) {
         throw new Error('Authentication error: Please log in again.');
       } else if (error.message.includes('403')) {
@@ -166,6 +177,23 @@ class ApiService {
     });
   }
 
+  // sendMessage with optional PDF filename
+  async sendMessageWithPdf(message, pdfFilename = null) {
+    const body = { message };
+    if (pdfFilename) body.pdf = pdfFilename;
+    return this.apiCall('/chatbot/message', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async sendPdfAnswer(path, query) {
+    return this.apiCall('/pdf/answer', {
+      method: 'POST',
+      body: JSON.stringify({ path, query }),
+    });
+  }
+
   async analyzeSentiment(message) {
     return this.apiCall('/chatbot/sentiment', {
       method: 'POST',
@@ -200,6 +228,11 @@ class ApiService {
     });
   }
 
+  // Chat history
+  async getChatHistory() {
+    return this.apiCall('/chatbot/history');
+  }
+
   // Request questions from uploaded PDF
   async getPdfQuestions(pdfPath) {
     return this.apiCall('/pdf/questions', {
@@ -228,12 +261,55 @@ class ApiService {
   }
 
   // MindSpace endpoints
-  async getMindSpaceSessions() {
-    return this.apiCall('/mindspace/sessions');
+  async getMindSpaceSessions(category = 'all') {
+    const params = category !== 'all' ? `?category=${category}` : '';
+    return this.apiCall(`/mindspace/sessions${params}`);
+  }
+
+  async getMindSpaceSession(sessionId) {
+    return this.apiCall(`/mindspace/sessions/${sessionId}`);
   }
 
   async getMindSpaceCategories() {
     return this.apiCall('/mindspace/categories');
+  }
+
+  async startMindSpaceSession(sessionId) {
+    return this.apiCall(`/mindspace/sessions/${sessionId}/start`, {
+      method: 'POST',
+    });
+  }
+
+  async updateSessionProgress(sessionId, progressSeconds) {
+    return this.apiCall(`/mindspace/sessions/${sessionId}/progress`, {
+      method: 'POST',
+      body: JSON.stringify({ progress_seconds: progressSeconds }),
+    });
+  }
+
+  async completeSession(sessionId, rating = null, notes = null) {
+    return this.apiCall(`/mindspace/sessions/${sessionId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify({ rating, notes }),
+    });
+  }
+
+  async getUserProgress() {
+    return this.apiCall('/mindspace/progress');
+  }
+
+  async getSessionHistory(limit = 10) {
+    return this.apiCall(`/mindspace/history?limit=${limit}`);
+  }
+
+  async getPersonalizedRecommendations() {
+    return this.apiCall('/mindspace/personalized-recommendations');
+  }
+
+  async scrapeExternalContent() {
+    return this.apiCall('/mindspace/scrape-external', {
+      method: 'POST',
+    });
   }
 
   // Coding endpoints
@@ -327,6 +403,19 @@ class ApiService {
       method: 'PUT',
       body: JSON.stringify(profileData),
     });
+  }
+
+  // Dashboard / Analytics endpoints
+  async getDashboardStats() {
+    return this.apiCall('/analytics/dashboard-stats');
+  }
+
+  async getMoodData() {
+    return this.apiCall('/analytics/mood-data');
+  }
+
+  async getRecentActivity() {
+    return this.apiCall('/analytics/recent-activity');
   }
 
   // Get user profile stats (placeholder - implement in backend)

@@ -41,7 +41,7 @@ def generate_groq_response(user_message, system_prompt=DEFAULT_SYSTEM_PROMPT):
                 {"role": "user", "content": user_message},
             ],
             temperature=0.7,
-            max_tokens=500,
+            max_tokens=1500,
         )
         reply = response.choices[0].message.content.strip()
         return {"success": True, "reply": reply}

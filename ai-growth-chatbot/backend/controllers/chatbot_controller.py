@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
@@ -8,8 +7,11 @@ from dotenv import load_dotenv
 
 from services.openai_services import generate_openai_response
 from services.groq_service import generate_groq_response
+from services.pdf_service import extract_pdf_text, answer_from_pdf
 from services.grammar_services import evaluate_speech_grammar
 from services.sentiment_service import analyze_sentiment
+from models.chat_model import ChatModel
+from flask_jwt_extended import get_jwt_identity
 
 # File handling directory
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), '..', 'uploads')
@@ -33,30 +35,80 @@ DEFAULT_SYSTEM_PROMPT = (
 @chatbot_bp.route('/message', methods=['POST'])
 @jwt_required()
 def handle_chat():
-    data = request.get_json()
+    data = request.get_json() or {}
     message = data.get('message')
+    pdf_filename = data.get('pdf')  # optional filename uploaded earlier
 
     if not message:
         return jsonify({'success': False, 'message': 'No message provided'}), 400
 
-    # Decide AI provider per-request to reflect current env/state
-    provider = (os.getenv("AI_PROVIDER", "groq") or "groq").lower()
+    result = None
 
-    if provider == "groq":
-        result = generate_groq_response(
-            user_message=message,
-            system_prompt=DEFAULT_SYSTEM_PROMPT
-        )
+    # If a PDF filename is provided and exists in uploads, answer from the PDF
+    if pdf_filename:
+        potential_paths = [
+            os.path.join(UPLOAD_DIR, pdf_filename),
+            pdf_filename if os.path.exists(pdf_filename) else None
+        ]
+        pdf_path = next((p for p in potential_paths if p and os.path.exists(p)), None)
+
+        if pdf_path:
+            try:
+                text = extract_pdf_text(pdf_path)
+                result = answer_from_pdf(text, message)
+            except Exception as e:
+                result = {"success": False, "error": f"PDF analysis error: {str(e)}"}
+        else:
+            result = {"success": False, "error": "Provided PDF file not found on server."}
     else:
-        result = generate_openai_response(
-            user_message=message,
-            system_prompt=DEFAULT_SYSTEM_PROMPT
-        )
+        # Decide AI provider per-request to reflect current env/state
+        provider = (os.getenv("AI_PROVIDER", "groq") or "groq").lower()
 
+        if provider == "groq":
+            result = generate_groq_response(
+                user_message=message,
+                system_prompt=DEFAULT_SYSTEM_PROMPT
+            )
+        else:
+            result = generate_openai_response(
+                user_message=message,
+                system_prompt=DEFAULT_SYSTEM_PROMPT
+            )
+
+    # Ensure chatbot response is formatted into a clean numbered list without redundant numbering
     if result.get("success"):
-        return jsonify({'success': True, 'response': result.get("reply", "")})
+        try:
+            user_id = get_jwt_identity()
+            ChatModel.save_message(user_id, message, result.get("reply", ""))
+        except Exception:
+            pass
+
+        # Format the response into a numbered list if it contains multiple lines
+        reply = result.get("reply", "")
+        if isinstance(reply, str):
+            lines = [line.strip() for line in reply.split("\n") if line.strip()]
+            if len(lines) > 1:
+                formatted_reply = "\n".join([f"{i+1}. {line}" for i, line in enumerate(lines)])
+            else:
+                formatted_reply = lines[0] if lines else reply
+        else:
+            formatted_reply = reply
+
+        return jsonify({'success': True, 'response': formatted_reply})
     else:
         return jsonify({'success': False, 'message': result.get("error", "Unknown error")}), 200
+
+
+# Endpoint to fetch recent chat history for the logged-in user
+@chatbot_bp.route('/history', methods=['GET'])
+@jwt_required()
+def get_history():
+    try:
+        user_id = get_jwt_identity()
+        chats = ChatModel.get_user_chats(user_id, limit=50)
+        return jsonify({'success': True, 'chats': chats})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Could not fetch history: {str(e)}'}), 200
 
 
 # ===========================================

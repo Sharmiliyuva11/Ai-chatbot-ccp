@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 from models.user_model import User
+from models.mood_model import Mood
 import os
 from dotenv import load_dotenv
 from bson import ObjectId
@@ -42,15 +43,20 @@ def get_dashboard_stats():
         if not user:
             return jsonify({'success': False, 'message': 'User not found'}), 404
         
+        # Get mood analytics
+        mood_analytics = Mood.get_mood_analytics(user_id, days=7)
+        
         # Calculate stats
         stats = {
             'chatSessions': 0,
             'activeTasks': 0,
             'meditationSessions': 0,
             'communityGroups': 0,
-            'mood': 8,
-            'stress': 1,
-            'daysActive': 0
+            'mood': mood_analytics.get('average_mood', 5),
+            'stress': mood_analytics.get('average_stress', 5),
+            'daysActive': 0,
+            'mood_trend': mood_analytics.get('mood_trend', 'stable'),
+            'mood_entries': mood_analytics.get('total_entries', 0)
         }
         
         # Get chat sessions count
@@ -146,28 +152,31 @@ def get_recent_activity():
 @analytics_bp.route('/mood-data', methods=['GET'])
 @jwt_required()
 def get_mood_data():
-    """Get mood data for charts (placeholder data for now)"""
+    """Get mood data for charts"""
     user_id = get_jwt_identity()
     
     try:
-        # For now, return sample data
-        # This can be extended with actual mood tracking functionality
-        mood_data = [
-            {'day': 'Mon', 'value': 7},
-            {'day': 'Tue', 'value': 8},
-            {'day': 'Wed', 'value': 6},
-            {'day': 'Thu', 'value': 9},
-            {'day': 'Fri', 'value': 7},
-            {'day': 'Sat', 'value': 8},
-            {'day': 'Sun', 'value': 9}
-        ]
+        # Get actual mood data from the database
+        weekly_mood_data = Mood.get_weekly_mood_data(user_id)
         
-        activity_data = [65, 78, 45, 89, 67, 78, 92]
+        # Format for chart display
+        mood_data = []
+        activity_data = []
+        
+        for day_data in weekly_mood_data:
+            mood_data.append({
+                'day': day_data['day'],
+                'value': day_data['mood'] if day_data['mood'] is not None else 5
+            })
+            # Activity data based on energy levels (or default values)
+            activity_value = day_data['energy'] if day_data['energy'] is not None else 50
+            activity_data.append(activity_value * 10)  # Scale to 0-100
         
         return jsonify({
             'success': True,
             'moodData': mood_data,
-            'activityData': activity_data
+            'activityData': activity_data,
+            'weeklyData': weekly_mood_data
         })
         
     except Exception as e:

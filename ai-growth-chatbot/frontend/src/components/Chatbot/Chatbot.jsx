@@ -14,7 +14,7 @@ const Chatbot = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null); // eslint-disable-line no-unused-vars
   const [uploadedPdfPath, setUploadedPdfPath] = useState(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -102,11 +102,18 @@ const Chatbot = () => {
         }
       } else {
         // Default: send message to chatbot
-        const response = await ApiService.sendMessage(inputMessage);
+        let response;
+        if (uploadedPdfPath) {
+          response = await ApiService.sendPdfAnswer(uploadedPdfPath, inputMessage);
+        } else {
+          response = await ApiService.sendMessage(inputMessage);
+        }
+
         if (response.success) {
+          const replyText = response.response || response.answer;
           const botMessage = {
             id: Date.now() + 1,
-            text: response.response,
+            text: replyText,
             sender: 'bot',
             timestamp: new Date()
           };

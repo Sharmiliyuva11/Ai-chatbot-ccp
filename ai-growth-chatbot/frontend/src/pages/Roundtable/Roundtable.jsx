@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, MessageCircle, Calendar, Clock, Plus, Search } from 'lucide-react';
 import api from '../../services/api';
+import socket from '../../services/socket';
 import './Roundtable.css';
 
 const Roundtable = () => {
@@ -20,6 +21,8 @@ const Roundtable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [joiningSessionId, setJoiningSessionId] = useState(null);
+  const [meetingRoom, setMeetingRoom] = useState(null);
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
 
   // Handler to open the create session modal
   const openCreateSessionModal = () => setShowCreateModal(true);
@@ -51,12 +54,40 @@ const Roundtable = () => {
         setSessions(grouped);
       } catch (err) {
         console.error('Error loading sessions:', err);
-        setError('Failed to load sessions. ' + (err.message || 'Please try again.'));
+        if (err && (err.code === 'NETWORK_ERROR' || err.message === 'Network error')) {
+          setError('Some features may be limited while offline. Unable to load sessions.');
+        } else {
+          setError('Failed to load sessions. ' + (err.message || 'Please try again.'));
+        }
         setSessions({ ongoing: [], upcoming: [], past: [] });
       }
       setLoading(false);
     };
     fetchSessions();
+
+    // Connect socket and join user room for notifications
+    try {
+      const token = localStorage.getItem('token');
+      const sock = socket.connect(token);
+      const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = userObj && userObj.id;
+      if (userId) {
+        sock.emit('join_user_room', { userId });
+      }
+
+      socket.on('participant_joined', (data) => {
+        // If current user is the host of the session, show notification
+        if (data && data.session && data.session.host_id) {
+          const hostId = data.session.host_id;
+          if (hostId === userId) {
+            // Show a simple notification — replace with toast in UI
+            alert(`User ${data.user_id} joined your session: ${data.session.title}`);
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('Socket connect failed', e);
+    }
   }, []);
 
   const getStatusColor = (status) => {
@@ -103,6 +134,31 @@ const Roundtable = () => {
       alert('Error joining session: ' + error.message);
     } finally {
       setJoiningSessionId(null);
+    }
+  };
+
+  const handleStartSession = async (sessionId) => {
+    try {
+      const response = await api.startSession(sessionId);
+      if (response.success && response.meeting) {
+        setMeetingRoom(response.meeting.room);
+        setShowMeetingModal(true);
+        // refresh sessions
+        const sessionsResponse = await api.getAllSessions();
+        const allSessions = sessionsResponse.sessions || [];
+        const grouped = { ongoing: [], upcoming: [], past: [] };
+        allSessions.forEach(session => {
+          if (session.status === 'live') grouped.ongoing.push(session);
+          else if (session.status === 'starting-soon' || session.status === 'scheduled') grouped.upcoming.push(session);
+          else grouped.past.push(session);
+        });
+        setSessions(grouped);
+      } else {
+        alert('Failed to start session: ' + (response.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error starting session:', error);
+      alert('Error starting session: ' + error.message);
     }
   };
 
@@ -263,27 +319,35 @@ const Roundtable = () => {
             
             <div className="session-progress">
               <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${(session.participants / session.maxParticipants) * 100}%` }}
-                ></div>
+                {(() => {
+                  const participantsCount = Array.isArray(session.participants) ? session.participants.length : (session.participants || 0);
+                  const pct = session.maxParticipants ? Math.min(100, (participantsCount / session.maxParticipants) * 100) : 0;
+                  return (
+                    <div className="progress-fill" style={{ width: `${pct}%` }} />
+                  );
+                })()}
               </div>
               <span className="progress-text">
-                {session.maxParticipants - session.participants} spots left
+                {(() => {
+                  const participantsCount = Array.isArray(session.participants) ? session.participants.length : (session.participants || 0);
+                  return `${Math.max(0, session.maxParticipants - participantsCount)} spots left`;
+                })()}
               </span>
             </div>
-            
+
             <div className="session-actions">
-              {/* If user is the moderator, show 'You are hosting' */}
               {session.moderatorId === user.id ? (
-                <span className="host-label">You are hosting</span>
+                <div className="host-actions">
+                  <span className="host-label">You are hosting</span>
+                  <button className="start-btn" onClick={() => handleStartSession(session._id)}>Start Meeting</button>
+                </div>
               ) : (
                 <>
-                  {(session.status === 'live' || session.status === 'starting-soon' || session.status === 'scheduled') && (
+                  {((session.status === 'live') || (session.status === 'starting-soon') || (session.status === 'scheduled')) && (
                     <button
                       className={`join-btn ${session.status}`}
                       onClick={() => handleJoinSession(session._id)}
-                      disabled={session.participants >= session.maxParticipants || joiningSessionId === session._id}
+                      disabled={(Array.isArray(session.participants) ? session.participants.length : session.participants || 0) >= session.maxParticipants || joiningSessionId === session._id}
                     >
                       {joiningSessionId === session._id ? 'Joining...' : (
                         <>
@@ -305,6 +369,26 @@ const Roundtable = () => {
           </div>
         ))}
       </div>
+
+      {showMeetingModal && meetingRoom && (
+        <div className="modal-overlay meeting-modal" role="dialog" aria-modal="true">
+          <div className="meeting-container">
+            <div className="meeting-header">
+              <h3>Meeting: {meetingRoom}</h3>
+              <button onClick={() => { setShowMeetingModal(false); setMeetingRoom(null); }} aria-label="Close">✕</button>
+            </div>
+            <div className="meeting-body">
+              {/* Embedded Jitsi Meet iframe (public instance). In production, consider self-hosting or using tokens */}
+              <iframe
+                title="Roundtable Meeting"
+                src={`https://meet.jit.si/${encodeURIComponent(meetingRoom)}#userInfo.displayName=${encodeURIComponent(user.name || 'Guest')}`}
+                style={{ width: '100%', height: '80vh', border: 0 }}
+                allow="camera; microphone; fullscreen; display-capture"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {sessions[activeTab].length === 0 && (
         <div className="empty-state">

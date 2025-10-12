@@ -10,7 +10,7 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false); // eslint-disable-line no-unused-vars
   const [error, setError] = useState('');
   const navigate = useNavigate();
 

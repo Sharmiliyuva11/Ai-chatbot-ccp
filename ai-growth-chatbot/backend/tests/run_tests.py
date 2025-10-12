@@ -45,7 +45,9 @@ if __name__ == '__main__':
             'test_reminder_controller',
             'test_reminder_scheduler', 
             'test_email_service',
-            'test_reminder_integration'
+            'test_reminder_integration',
+            'test_pdf_controller',
+            'test_pdf_service'
         ]
     )
     

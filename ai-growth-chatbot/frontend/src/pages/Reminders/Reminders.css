@@ -11,7 +11,6 @@
   padding: 0.7rem 1.5rem;
   box-shadow: 0 4px 16px rgba(37,99,235,0.12);
   cursor: pointer;
-  margin-bottom: 1.5rem;
   transition: background 0.18s, color 0.18s;
 }
 .add-reminder-btn:hover {
@@ -62,25 +61,25 @@ h1 {
 /* --- Modern Reminder Card Styles --- */
 /* Reminder card theme colors */
 .reminder-card {
-  background: var(--card-bg, #e3f2fd) !important;
+  background: #ffffff !important;
 }
 .reminder-card:nth-child(1) {
-  background: #e3f2fd !important;
+  background: #ffffff !important;
 }
 .reminder-card:nth-child(2) {
-  background: #fffde7 !important;
+  background: #ffffff !important;
 }
 .reminder-card:nth-child(3) {
-  background: #f3e5f5 !important;
+  background: #ffffff !important;
 }
 .reminder-card:nth-child(4) {
-  background: #e8f5e9 !important;
+  background: #ffffff !important;
 }
 /* Removed orphaned properties from broken block */
 .reminder-card:hover {
   box-shadow: 0 10px 40px 0 rgba(99,102,241,0.18), 0 2px 0 0 var(--accent, #6366f1);
   border-color: var(--accent, #6366f1);
-  background: var(--reminder-card-bg-hover, #232a36);
+  background: #ffffff !important;
 }
 .reminder-card.completed {
   opacity: 1;
@@ -376,7 +375,7 @@ h1 {
 .reminder-card {
   display: flex;
   flex-direction: column;
-  background: var(--card-bg);
+  background: #ffffff !important;
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.06);
@@ -455,12 +454,15 @@ h1 {
 }
 
 .reminders-header {
-  background: linear-gradient(90deg, #f75301 0%, #e56f14 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(223, 85, 11, 0.18);
-  padding: 2rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(5, 150, 105, 0.3);
+  padding: 2rem 2.5rem;
   margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .stat-card {
   background: #fffde7 !important;
@@ -508,20 +510,24 @@ h1 {
 }
 
 .reminders-header h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin: 0;
+  color: white;
+}
+
+.reminders-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
 }
 
 .reminders-header p {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 0;
-  opacity: 0.8;
-  color: #cbd5e0;
+  opacity: 0.9;
+  color: white;
 }
 
 .reminders-content {
@@ -697,19 +703,41 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.footer-actions {
+  display: inline-flex;
+  gap: 0.5rem;
 }
 
 .cta-btn {
   border: none;
   border-radius: 10px;
-  padding: 0.6rem 1.1rem;
+  padding: 0.55rem 1.05rem;
   font-weight: 700;
   cursor: pointer;
 }
 .cta-btn.primary { background: #22c55e; color: #fff; }
 .cta-btn.primary:hover { background: #16a34a; }
-.cta-btn.secondary { background: #f59e0b; color: #0f172a; }
-.cta-btn.secondary:hover { background: #f59e0bcc; }
+.cta-btn.secondary { background: #e2e8f0; color: #0f172a; }
+.cta-btn.secondary:hover { background: #cbd5e1; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 2px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  cursor: pointer;
+}
+.icon-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
 
 .reminder-item {
   display: flex;

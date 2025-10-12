@@ -9,7 +9,7 @@ def convert_voice_to_text(audio_path):
             text = recognizer.recognize_google(audio_data)
             return {"success": True, "text": text}
     except sr.UnknownValueError:
-        return {"success": False, "error": "Could not understand audio"}
+        return {"success": False, "error": "Speech recognition failed. Please speak clearly and try again."}
     except sr.RequestError as e:
         return {"success": False, "error": f"Speech Recognition error: {e}"}
 

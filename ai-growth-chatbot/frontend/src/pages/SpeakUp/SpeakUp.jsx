@@ -38,11 +38,24 @@ const SpeakUp = () => {
       setLoading(true);
       setError('');
       try {
-        // Replace with actual API endpoint for chat history if available
-        // For now, use profile as placeholder
-        const profile = await api.getProfile();
-        if (profile && Array.isArray(profile.chatHistory)) {
-          setChatHistory(profile.chatHistory);
+        // Load chat history from backend
+        const res = await api.getChatHistory();
+        if (res && res.success && Array.isArray(res.chats)) {
+          // Map backend chat shape to frontend expected fields
+          const mapped = res.chats.map((c) => ({
+            id: c._id || Date.now() + Math.random(),
+            type: 'bot', // saved interactions are bot replies; user_input isn't shown as 'user' in this mapping
+            message: `Q: ${c.user_input}\nA: ${c.bot_response}`,
+            timestamp: new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+          setChatHistory(mapped.length ? mapped.reverse() : [
+            {
+              id: 1,
+              type: 'bot',
+              message: "Hello! I'm here to listen and support you. How are you feeling today?",
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          ]);
         } else {
           // Fallback to welcome message if no history
           setChatHistory([
@@ -55,7 +68,12 @@ const SpeakUp = () => {
           ]);
         }
       } catch (err) {
-        setError('Failed to load chat history.');
+        // If network error from API, show a softer offline notice instead of alarming text
+        if (err && (err.code === 'NETWORK_ERROR' || err.message === 'Network error')) {
+          setError('Some features may be limited while offline.');
+        } else {
+          setError('Failed to load chat history.');
+        }
         setChatHistory([
           {
             id: 1,
@@ -89,7 +107,8 @@ const SpeakUp = () => {
 
     try {
       setIsSending(true);
-      const res = await api.sendMessage(text);
+      // If a file is selected (uploaded), send the filename so backend can use it
+      const res = selectedFile ? await api.sendMessageWithPdf(text, selectedFile.name) : await api.sendMessage(text);
       const botText = res?.response || res?.message || 'Sorry, I could not generate a response right now.';
       const botMsg = {
         id: Date.now() + 1,
@@ -99,10 +118,13 @@ const SpeakUp = () => {
       };
       setChatHistory((prev) => [...prev, botMsg]);
     } catch (err) {
+      const userVisible = (err && (err.code === 'NETWORK_ERROR' || err.message === 'Network error'))
+        ? 'The chatbot is currently offline. Please try again when your connection is restored.'
+        : `Sorry, I ran into an error: ${err.message}`;
       const errMsg = {
         id: Date.now() + 2,
         type: 'bot',
-        message: `Sorry, I ran into an error: ${err.message}`,
+        message: userVisible,
         timestamp: getTimestamp()
       };
       setChatHistory((prev) => [...prev, errMsg]);
@@ -241,6 +263,8 @@ const SpeakUp = () => {
             timestamp: getTimestamp()
           }
         ]);
+        // Store uploaded filename so other actions can use it (e.g., generate 16-mark)
+        setSelectedFile(file);
       } else {
         setChatHistory((prev) => [
           ...prev,
@@ -356,6 +380,7 @@ const SpeakUp = () => {
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
                   />
+
 
                   {/* Voice toggle button */}
                   <button

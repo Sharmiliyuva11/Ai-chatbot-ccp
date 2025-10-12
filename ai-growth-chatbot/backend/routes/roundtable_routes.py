@@ -63,9 +63,41 @@ def join_session(session_id):
     if success:
         # Get updated session
         updated_session = RoundtableSession.find_by_id(session_id)
+        # Notify host via socket.io if available
+        try:
+            # Import socketio here to avoid circular import with app
+            from app import socketio
+            host_id = updated_session.get('host_id')
+            # Emit to the host room (room name: user-<host_id>)
+            socketio.emit('participant_joined', {'session_id': session_id, 'user_id': user_id, 'session': updated_session}, room=f'user-{host_id}')
+        except Exception:
+            pass
         return jsonify({'success': True, 'session': updated_session})
     else:
         return jsonify({'success': False, 'message': 'Failed to join session'}), 500
+
+
+@roundtable_bp.route('/sessions/<session_id>/start', methods=['POST'])
+@jwt_required()
+def start_session(session_id):
+    user_id = get_jwt_identity()
+
+    session = RoundtableSession.find_by_id(session_id)
+    if not session:
+        return jsonify({'success': False, 'message': 'Session not found'}), 404
+
+    # Only host can start
+    if session.get('host_id') != user_id:
+        return jsonify({'success': False, 'message': 'Only host can start the session'}), 403
+
+    # Set session status to live
+    updated = RoundtableSession.update_status(session_id, 'live')
+    if updated:
+        # Generate a simple meeting room id (in production use a proper meeting service or token)
+        meeting_room = f"roundtable-{session_id}"
+        return jsonify({'success': True, 'meeting': {'room': meeting_room}})
+    else:
+        return jsonify({'success': False, 'message': 'Failed to start session'}), 500
 
 @roundtable_bp.route('/sessions/<session_id>', methods=['DELETE'])
 @jwt_required()

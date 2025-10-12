@@ -6,6 +6,8 @@ import './CodingSpace.css';
 const CodingSpace = () => {
   const [activeTab, setActiveTab] = useState('projects');
   const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showSnippetModal, setShowSnippetModal] = useState(false);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -14,7 +16,22 @@ const CodingSpace = () => {
     github_link: '',
     phase: 'idea',
   });
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [newTemplate, setNewTemplate] = useState({
+    name: '',
+    description: '',
+    language: '',
+    category: '',
+    code: '',
+    tags: '',
+  });
+  const [newSnippet, setNewSnippet] = useState({
+    name: '',
+    description: '',
+    language: '',
+    code: '',
+    category: '',
+  });
+  const [selectedProject, setSelectedProject] = useState(null); // eslint-disable-line no-unused-vars
   const [code, setCode] = useState('// Welcome to Coding Space\n// Start coding here!\n\nfunction hello() {\n  console.log("Hello, World!");\n}\n\nhello();');
   const [projects, setProjects] = useState({ projects: [], templates: [], snippets: [] });
   const [loading, setLoading] = useState(true);
@@ -61,7 +78,12 @@ const CodingSpace = () => {
           errorMessage += 'Please check your connection and try again.';
         }
         setError(errorMessage);
-        setProjects({ projects: [], templates: [], snippets: [] });
+        // fall back to example data if backend is unavailable
+        setProjects({
+          projects: [],
+          templates: getExampleTemplates(),
+          snippets: getExampleSnippets()
+        });
         // Set default languages if API fails
         setSupportedLanguages([
           { name: 'javascript', displayName: 'JavaScript' },
@@ -77,13 +99,48 @@ const CodingSpace = () => {
   }, []);
 
   // Add improved error display for network and auth errors
+  // When a network error occurs, probe the backend root endpoint before
+  // showing the full "Unable to connect..." message. This prevents the
+  // intimidating copy from showing when the backend is actually reachable
+  // (for example, due to an intermittent fetch error or proxy).
   const ErrorMessage = ({ message }) => {
+    const [backendReachable, setBackendReachable] = React.useState(null);
+
+    React.useEffect(() => {
+      let mounted = true;
+      if (message && message.includes('Network error')) {
+        // Probe the backend root (CORS allows this) to confirm reachability
+        (async () => {
+          try {
+            const res = await fetch('http://localhost:5000/');
+            if (!mounted) return;
+            setBackendReachable(!!res && res.ok);
+          } catch (e) {
+            if (!mounted) return;
+            setBackendReachable(false);
+          }
+        })();
+      } else {
+        setBackendReachable(null);
+      }
+      return () => { mounted = false; };
+    }, [message]);
+
     if (!message) return null;
 
     let displayMessage = message;
 
     if (message.includes('Network error')) {
-      displayMessage = 'Unable to connect to the backend server. Please ensure the backend is running.';
+      if (backendReachable === null) {
+        displayMessage = 'Checking server availability...';
+      } else if (backendReachable === true) {
+        // Backend appears reachable — do not show a banner. The page
+        // already falls back to local example data; hiding the message
+        // avoids confusing the user when the server is reachable.
+        return null;
+      } else {
+        displayMessage = 'Unable to connect to the backend server. Please ensure the backend is running.';
+      }
     } else if (message.includes('Authentication error')) {
       displayMessage = 'Authentication failed. Please log in again.';
     } else if (message.includes('Access denied')) {
@@ -101,7 +158,164 @@ const CodingSpace = () => {
     );
   };
 
-  // Removed duplicate getLanguageColor function to fix redeclaration error
+  // Example data functions
+  const getExampleTemplates = () => [
+    {
+      id: 'template_1',
+      name: 'React Component Template',
+      description: 'Basic functional React component with hooks',
+      language: 'JavaScript',
+      category: 'Frontend',
+      difficulty: 'Beginner',
+      code: `import React, { useState, useEffect } from 'react';
+
+const ComponentName = ({ prop1, prop2 }) => {
+  const [state, setState] = useState('');
+
+  useEffect(() => {
+    // Side effects here
+  }, []);
+
+  const handleClick = () => {
+    // Handle click logic
+  };
+
+  return (
+    <div className="component-name">
+      <h1>Hello World</h1>
+      <button onClick={handleClick}>Click me</button>
+    </div>
+  );
+};
+
+export default ComponentName;`,
+      tags: ['react', 'component', 'hooks'],
+      lastModified: '2 days ago'
+    },
+    {
+      id: 'template_2',
+      name: 'Python Flask API',
+      description: 'REST API endpoint using Flask framework',
+      language: 'Python',
+      category: 'Backend',
+      difficulty: 'Intermediate',
+      code: `from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    try:
+        # Your logic here
+        users = []
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users', methods=['POST'])
+def create_user():
+    try:
+        data = request.get_json()
+        # Create user logic
+        return jsonify({'success': True, 'message': 'User created'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)`,
+      tags: ['flask', 'api', 'python'],
+      lastModified: '1 week ago'
+    }
+  ];
+
+  const getExampleSnippets = () => [
+    {
+      id: 'snippet_1',
+      name: 'Array Sort Methods',
+      description: 'Common JavaScript array sorting techniques',
+      language: 'JavaScript',
+      category: 'Utilities',
+      code: `// Sort numbers ascending
+const numbers = [3, 1, 4, 1, 5];
+numbers.sort((a, b) => a - b);
+
+// Sort objects by property
+const users = [{name: 'John', age: 30}, {name: 'Jane', age: 25}];
+users.sort((a, b) => a.age - b.age);
+
+// Sort strings (case-insensitive)
+const names = ['John', 'jane', 'Bob'];
+names.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));`,
+      lines: 9,
+      lastModified: '3 days ago'
+    },
+    {
+      id: 'snippet_2',
+      name: 'Python List Comprehensions',
+      description: 'Efficient list processing patterns',
+      language: 'Python',
+      category: 'Data Processing',
+      code: `# Basic list comprehension
+squares = [x**2 for x in range(10)]
+
+# With condition
+evens = [x for x in range(20) if x % 2 == 0]
+
+# Nested comprehension
+matrix = [[j for j in range(3)] for i in range(3)]
+
+# Dictionary comprehension
+word_lengths = {word: len(word) for word in ['hello', 'world']}`,
+      lines: 8,
+      lastModified: '5 days ago'
+    }
+  ];
+
+  const createTemplate = async (templateData) => {
+    try {
+      const response = await api.createTemplate(templateData);
+      if (response.success) {
+        // Refresh templates list
+        const templatesRes = await api.getTemplates();
+        setProjects(prev => ({
+          ...prev,
+          templates: templatesRes.templates || prev.templates
+        }));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to create template:', err);
+      if (err.message && err.message.toLowerCase().includes('network')) {
+        alert('Unable to reach the server. Templates are stored locally only while the backend is offline.');
+      }
+      return false;
+    }
+  };
+
+  const createSnippet = async (snippetData) => {
+    try {
+      const response = await api.createSnippet(snippetData);
+      if (response.success) {
+        // Refresh snippets list
+        const snippetsRes = await api.getSnippets();
+        setProjects(prev => ({
+          ...prev,
+          snippets: snippetsRes.snippets || prev.snippets
+        }));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to create snippet:', err);
+      if (err.message && err.message.toLowerCase().includes('network')) {
+        alert('Unable to reach the server. Snippets are stored locally only while the backend is offline.');
+      }
+      return false;
+    }
+  };
 
   const getLanguageColor = (language) => {
     const colors = {
@@ -207,10 +421,24 @@ const CodingSpace = () => {
             <Search className="search-icon" />
             <input type="text" placeholder="Search projects..." />
           </div>
-          <button className="create-project-btn" onClick={() => setShowProjectModal(true)}>
-            <Plus className="icon" />
-            New Project
-          </button>
+          {activeTab === 'projects' && (
+            <button className="create-project-btn" onClick={() => setShowProjectModal(true)}>
+              <Plus className="icon" />
+              New Project
+            </button>
+          )}
+          {activeTab === 'templates' && (
+            <button className="create-project-btn" onClick={() => setShowTemplateModal(true)}>
+              <Plus className="icon" />
+              New Template
+            </button>
+          )}
+          {activeTab === 'snippets' && (
+            <button className="create-project-btn" onClick={() => setShowSnippetModal(true)}>
+              <Plus className="icon" />
+              New Snippet
+            </button>
+          )}
           {showProjectModal && (
             <div className="modal-overlay" role="dialog" aria-modal="true">
               <div className="add-reminder-modal">
@@ -278,6 +506,130 @@ const CodingSpace = () => {
                     <div className="modal-actions">
                       <button type="submit" className="primary">Save</button>
                       <button type="button" className="secondary" onClick={() => setShowProjectModal(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Template Creation Modal */}
+          {showTemplateModal && (
+            <div className="modal-overlay" role="dialog" aria-modal="true">
+              <div className="add-reminder-modal">
+                <div className="modal-header" style={{background: 'linear-gradient(90deg, #f093fb, #f5576c)'}}>
+                  <button className="modal-back" type="button" onClick={() => setShowTemplateModal(false)} aria-label="Close">←</button>
+                  <h2 className="modal-title">Create Template</h2>
+                  <button className="modal-menu" type="button" aria-label="Menu">≡</button>
+                </div>
+                <div className="modal-card">
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const success = await createTemplate({
+                      ...newTemplate,
+                      tags: newTemplate.tags.split(',').map(t => t.trim()).filter(Boolean)
+                    });
+                    if (success) {
+                      setNewTemplate({
+                        name: '',
+                        description: '',
+                        language: '',
+                        category: '',
+                        code: '',
+                        tags: '',
+                      });
+                      setShowTemplateModal(false);
+                    } else {
+                      alert('Failed to create template. Please try again.');
+                    }
+                  }}>
+                    <div className="modal-field">
+                      <label>Template Name<span className="req">*</span></label>
+                      <input type="text" value={newTemplate.name} onChange={e => setNewTemplate({...newTemplate, name: e.target.value})} required placeholder="Enter template name" />
+                    </div>
+                    <div className="modal-field">
+                      <label>Description<span className="req">*</span></label>
+                      <textarea value={newTemplate.description} onChange={e => setNewTemplate({...newTemplate, description: e.target.value})} required placeholder="Describe the template" rows="2" />
+                    </div>
+                    <div className="modal-row">
+                      <div className="modal-field">
+                        <label>Language<span className="req">*</span></label>
+                        <input type="text" value={newTemplate.language} onChange={e => setNewTemplate({...newTemplate, language: e.target.value})} required placeholder="e.g. JavaScript, Python" />
+                      </div>
+                      <div className="modal-field">
+                        <label>Category<span className="req">*</span></label>
+                        <input type="text" value={newTemplate.category} onChange={e => setNewTemplate({...newTemplate, category: e.target.value})} required placeholder="e.g. Frontend, Backend" />
+                      </div>
+                    </div>
+                    <div className="modal-field">
+                      <label>Code<span className="req">*</span></label>
+                      <textarea value={newTemplate.code} onChange={e => setNewTemplate({...newTemplate, code: e.target.value})} required placeholder="Paste your template code here..." rows="8" style={{fontFamily: 'monospace'}} />
+                    </div>
+                    <div className="modal-field">
+                      <label>Tags <span className="optional">(comma-separated)</span></label>
+                      <input type="text" value={newTemplate.tags} onChange={e => setNewTemplate({...newTemplate, tags: e.target.value})} placeholder="e.g. react, component, hooks" />
+                    </div>
+                    <div className="modal-actions">
+                      <button type="submit" className="primary">Create Template</button>
+                      <button type="button" className="secondary" onClick={() => setShowTemplateModal(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Snippet Creation Modal */}
+          {showSnippetModal && (
+            <div className="modal-overlay" role="dialog" aria-modal="true">
+              <div className="add-reminder-modal">
+                <div className="modal-header" style={{background: 'linear-gradient(90deg, #4facfe, #00f2fe)'}}>
+                  <button className="modal-back" type="button" onClick={() => setShowSnippetModal(false)} aria-label="Close">←</button>
+                  <h2 className="modal-title">Create Snippet</h2>
+                  <button className="modal-menu" type="button" aria-label="Menu">≡</button>
+                </div>
+                <div className="modal-card">
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const success = await createSnippet(newSnippet);
+                    if (success) {
+                      setNewSnippet({
+                        name: '',
+                        description: '',
+                        language: '',
+                        code: '',
+                        category: '',
+                      });
+                      setShowSnippetModal(false);
+                    } else {
+                      alert('Failed to create snippet. Please try again.');
+                    }
+                  }}>
+                    <div className="modal-field">
+                      <label>Snippet Name<span className="req">*</span></label>
+                      <input type="text" value={newSnippet.name} onChange={e => setNewSnippet({...newSnippet, name: e.target.value})} required placeholder="Enter snippet name" />
+                    </div>
+                    <div className="modal-field">
+                      <label>Description<span className="req">*</span></label>
+                      <textarea value={newSnippet.description} onChange={e => setNewSnippet({...newSnippet, description: e.target.value})} required placeholder="Describe the snippet" rows="2" />
+                    </div>
+                    <div className="modal-row">
+                      <div className="modal-field">
+                        <label>Language<span className="req">*</span></label>
+                        <input type="text" value={newSnippet.language} onChange={e => setNewSnippet({...newSnippet, language: e.target.value})} required placeholder="e.g. JavaScript, Python" />
+                      </div>
+                      <div className="modal-field">
+                        <label>Category<span className="req">*</span></label>
+                        <input type="text" value={newSnippet.category} onChange={e => setNewSnippet({...newSnippet, category: e.target.value})} required placeholder="e.g. Utilities, Data Processing" />
+                      </div>
+                    </div>
+                    <div className="modal-field">
+                      <label>Code<span className="req">*</span></label>
+                      <textarea value={newSnippet.code} onChange={e => setNewSnippet({...newSnippet, code: e.target.value})} required placeholder="Paste your code snippet here..." rows="6" style={{fontFamily: 'monospace'}} />
+                    </div>
+                    <div className="modal-actions">
+                      <button type="submit" className="primary">Create Snippet</button>
+                      <button type="button" className="secondary" onClick={() => setShowSnippetModal(false)}>Cancel</button>
                     </div>
                   </form>
                 </div>
@@ -483,10 +835,24 @@ const CodingSpace = () => {
           <Code className="empty-icon" />
           <h3>No {activeTab} found</h3>
           <p>Start by creating your first {activeTab.slice(0, -1)}.</p>
-          <button className="create-project-btn">
-            <Plus className="icon" />
-            Create New {activeTab.slice(0, -1)}
-          </button>
+          {activeTab === 'projects' && (
+            <button className="create-project-btn" onClick={() => setShowProjectModal(true)}>
+              <Plus className="icon" />
+              Create New Project
+            </button>
+          )}
+          {activeTab === 'templates' && (
+            <button className="create-project-btn" onClick={() => setShowTemplateModal(true)}>
+              <Plus className="icon" />
+              Create New Template
+            </button>
+          )}
+          {activeTab === 'snippets' && (
+            <button className="create-project-btn" onClick={() => setShowSnippetModal(true)}>
+              <Plus className="icon" />
+              Create New Snippet
+            </button>
+          )}
         </div>
       )}
     </div>

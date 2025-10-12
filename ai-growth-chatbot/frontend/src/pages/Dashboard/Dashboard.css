@@ -310,31 +310,41 @@
 /* Mood Chart */
 .mood-chart-container {
   display: flex;
-  justify-content: space-between;
-  align-items: end;
-  height: 200px;
-  padding: 1rem 0;
-}
-
-.mood-bar {
-  display: flex;
   flex-direction: column;
-  align-items: center;
-  flex: 1;
+  gap: 1rem;
+  padding: 1rem 0 0;
 }
 
-.mood-bar-fill {
-  width: 20px;
-  background: #00d4ff !important;
-  border-radius: 4px 4px 0 0;
-  margin-bottom: 0.5rem;
-  transition: height 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+.mood-chart-container svg {
+  width: 100%;
+  height: 200px;
 }
 
-.mood-day {
+.mood-line {
+  fill: none;
+  stroke: var(--primary-color, #3b82f6);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mood-point {
+  fill: #0284c7;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.mood-point-value {
+  fill: var(--text-secondary, #64748b);
+  font-size: 0.65rem;
+  text-anchor: middle;
+}
+
+.mood-chart-days {
+  display: flex;
+  justify-content: space-between;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-secondary, #64748b);
   font-weight: 500;
 }
 
@@ -342,23 +352,33 @@
 .activity-bars {
   display: flex;
   justify-content: space-between;
-  align-items: end;
-  height: 200px;
-  gap: 0.5rem;
+  align-items: flex-end;
+  height: 220px;
+  gap: 0.75rem;
 }
 
 .activity-bar {
   flex: 1;
   display: flex;
-  align-items: end;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .activity-bar-fill {
+  position: relative;
   width: 100%;
-  background: #ffc107;
-  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #facc15 0%, #f97316 100%);
+  border-radius: 6px 6px 0 0;
   transition: height 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.75rem;
 }
 
 /* Bottom Section */
@@ -382,51 +402,84 @@
 .insights-card h3, .progress-card h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary) !important;
   margin: 0 0 1.5rem 0;
 }
 
-/* Mood Distribution */
-.mood-distribution {
+/* Fix daily meditation box text colors */
+.daily-meditation-box h3 {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.daily-meditation-box {
   background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color, rgba(255,255,255,0.1));
   padding: 1.5rem;
+}
+
+/* Mood Distribution */
+.mood-distribution {
   display: flex;
   align-items: center;
   gap: 2rem;
 }
 
-.mood-circle {
-  width: 120px;
-  height: 120px;
-  position: relative;
+/* Fix mood distribution box text color for both themes */
+.mood-distribution-box h3 {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
-.circle-chart {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+.mood-distribution-box {
   background: var(--card-bg) !important;
-  position: relative;
-}
-
-.circle-chart::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
-  background: var(--secondary-bg) !important;
-  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color, rgba(255,255,255,0.1));
   padding: 1.5rem;
-  border-radius: 50%;
+}
+
+.mood-circle {
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radial-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.radial-bg,
+.radial-segment {
+  fill: none;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.radial-bg {
+  stroke: rgba(148, 163, 184, 0.25);
+}
+
+.radial-segment.excellent {
+  stroke: #10b981;
+}
+.radial-segment.good {
+  stroke: #3b82f6;
+}
+.radial-segment.okay {
+  stroke: #f59e0b;
+}
+.radial-segment.poor {
+  stroke: #ef4444;
 }
 
 .mood-legend {
@@ -440,7 +493,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: var(--text-secondary) !important;
 }
 
 .legend-color {
@@ -469,7 +522,7 @@
 
 .progress-label {
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: var(--text-secondary) !important;
   font-weight: 500;
 }
 
@@ -522,7 +575,7 @@
 .activity-timeline h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary, #1e293b);
   margin: 0 0 1.5rem 0;
 }
 
@@ -537,12 +590,13 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--secondary-bg) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   transition: all 0.3s ease;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
 .timeline-item:hover {
@@ -568,14 +622,15 @@
 
 .timeline-text {
   font-size: 0.875rem;
-  color: #ffffff;
-  font-weight: 500;
+  color: var(--text-primary, #1e293b);
+  font-weight: 600;
   margin: 0 0 0.25rem 0;
 }
 
 .timeline-time {
   font-size: 0.75rem;
   color: var(--text-secondary, #64748b);
+  font-weight: 500;
 }
 
 .timeline-btn {

@@ -1,110 +1,245 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from models.mindspace_model import MindSpaceModel
+import os
+import requests
+import time
 
 # Blueprint for mindspace routes
 mindspace_bp = Blueprint('mindspace', __name__)
+mindspace_model = MindSpaceModel()
 
 @mindspace_bp.route('/sessions', methods=['GET'])
 def get_sessions():
     """Get all mindspace sessions"""
-    sessions = [
-        {
-            "id": 1,
-            "title": "Morning Mindfulness",
-            "description": "Start your day with clarity and intention through guided mindfulness practice.",
-            "duration": "10 min",
-            "category": "meditation",
-            "difficulty": "Beginner",
-            "instructor": "Sarah Chen",
-            "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-            "audio": "/audio/morning-mindfulness.mp3",
-            "plays": 1250,
-            "rating": 4.8
-        },
-        {
-            "id": 2,
-            "title": "Deep Focus Flow",
-            "description": "Enhance concentration and productivity with binaural beats and ambient sounds.",
-            "duration": "25 min",
-            "category": "focus",
-            "difficulty": "Intermediate",
-            "instructor": "Michael Torres",
-            "image": "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=300&h=200&fit=crop",
-            "audio": "/audio/deep-focus.mp3",
-            "plays": 890,
-            "rating": 4.9
-        },
-        {
-            "id": 3,
-            "title": "Peaceful Sleep Journey",
-            "description": "Drift into restful sleep with calming narration and gentle soundscapes.",
-            "duration": "30 min",
-            "category": "sleep",
-            "difficulty": "Beginner",
-            "instructor": "Emma Wilson",
-            "image": "https://images.unsplash.com/photo-1517147177326-b37599372b73?w=300&h=200&fit=crop",
-            "audio": "/audio/sleep-journey.mp3",
-            "plays": 2100,
-            "rating": 4.7
-        },
-        {
-            "id": 4,
-            "title": "Energy Boost Meditation",
-            "description": "Revitalize your mind and body with energizing breathing techniques.",
-            "duration": "15 min",
-            "category": "energy",
-            "difficulty": "Intermediate",
-            "instructor": "David Kim",
-            "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-            "audio": "/audio/energy-boost.mp3",
-            "plays": 675,
-            "rating": 4.6
-        },
-        {
-            "id": 5,
-            "title": "Forest Sounds Relaxation",
-            "description": "Immerse yourself in the tranquil sounds of nature for deep relaxation.",
-            "duration": "45 min",
-            "category": "nature",
-            "difficulty": "Beginner",
-            "instructor": "Nature Sounds",
-            "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop",
-            "audio": "/audio/forest-sounds.mp3",
-            "plays": 1800,
-            "rating": 4.9
-        },
-        {
-            "id": 6,
-            "title": "Ocean Waves Meditation",
-            "description": "Let the rhythmic sounds of ocean waves guide you to inner peace.",
-            "duration": "20 min",
-            "category": "nature",
-            "difficulty": "Beginner",
-            "instructor": "Ocean Sounds",
-            "image": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=300&h=200&fit=crop",
-            "audio": "/audio/ocean-waves.mp3",
-            "plays": 1450,
-            "rating": 4.8
-        }
-    ]
-    
-    return jsonify({
-        "success": True,
-        "sessions": sessions
-    })
+    try:
+        category = request.args.get('category', 'all')
+        sessions = mindspace_model.get_all_sessions(category)
+        
+        return jsonify({
+            "success": True,
+            "sessions": sessions
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching sessions: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/sessions/<int:session_id>', methods=['GET'])
+def get_session(session_id):
+    """Get a specific session by ID"""
+    try:
+        session = mindspace_model.get_session_by_id(session_id)
+        
+        if not session:
+            return jsonify({
+                "success": False,
+                "message": "Session not found"
+            }), 404
+            
+        return jsonify({
+            "success": True,
+            "session": session
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching session: {str(e)}"
+        }), 500
 
 @mindspace_bp.route('/categories', methods=['GET'])
 def get_categories():
     """Get all mindspace categories"""
-    categories = [
-        {"id": "all", "name": "All"},
-        {"id": "meditation", "name": "Meditation"},
-        {"id": "focus", "name": "Focus"},
-        {"id": "sleep", "name": "Sleep"},
-        {"id": "energy", "name": "Energy"},
-        {"id": "nature", "name": "Nature"}
-    ]
-    
-    return jsonify({
-        "success": True,
-        "categories": categories
-    })
+    try:
+        categories = mindspace_model.get_categories()
+        # Add 'all' category at the beginning
+        categories.insert(0, {"id": "all", "name": "All", "description": "All categories", "icon": "brain", "color": "#6366f1"})
+        
+        return jsonify({
+            "success": True,
+            "categories": categories
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching categories: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/sessions/<int:session_id>/start', methods=['POST'])
+@jwt_required()
+def start_session(session_id):
+    """Start a session for the current user"""
+    try:
+        user_id = get_jwt_identity()
+        session_record_id = mindspace_model.start_session(user_id, session_id)
+        
+        return jsonify({
+            "success": True,
+            "session_record_id": session_record_id,
+            "message": "Session started successfully"
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error starting session: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/sessions/<int:session_id>/progress', methods=['POST'])
+@jwt_required()
+def update_progress(session_id):
+    """Update session progress"""
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        progress_seconds = data.get('progress_seconds', 0)
+        
+        mindspace_model.update_session_progress(user_id, session_id, progress_seconds)
+        
+        return jsonify({
+            "success": True,
+            "message": "Progress updated successfully"
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error updating progress: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/sessions/<int:session_id>/complete', methods=['POST'])
+@jwt_required()
+def complete_session(session_id):
+    """Mark a session as completed"""
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        rating = data.get('rating')
+        notes = data.get('notes')
+        
+        success = mindspace_model.complete_session(user_id, session_id, rating, notes)
+        
+        if success:
+            return jsonify({
+                "success": True,
+                "message": "Session completed successfully"
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "message": "Session not found or already completed"
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error completing session: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/progress', methods=['GET'])
+@jwt_required()
+def get_user_progress():
+    """Get current user's progress"""
+    try:
+        user_id = get_jwt_identity()
+        progress = mindspace_model.get_user_progress(user_id)
+        
+        return jsonify({
+            "success": True,
+            "progress": progress
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching progress: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/history', methods=['GET'])
+@jwt_required()
+def get_session_history():
+    """Get current user's session history"""
+    try:
+        user_id = get_jwt_identity()
+        limit = request.args.get('limit', 10, type=int)
+        history = mindspace_model.get_user_session_history(user_id, limit)
+        
+        return jsonify({
+            "success": True,
+            "history": history
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching history: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/scrape-external', methods=['POST'])
+@jwt_required()
+def scrape_external_content():
+    """Scrape external meditation resources (placeholder for future implementation)"""
+    try:
+        # This is a placeholder for external content scraping
+        # In the future, you can implement scraping from meditation APIs like:
+        # - Insight Timer API
+        # - Headspace API (if available)
+        # - Calm API
+        # - YouTube meditation content
+        
+        # For now, return a mock response
+        external_content = [
+            {
+                "id": "ext_1",
+                "title": "External Guided Meditation",
+                "description": "Sample external content from meditation API",
+                "duration": "15 min",
+                "category": "meditation",
+                "source": "external_api",
+                "url": "https://example.com/meditation",
+                "rating": 4.5
+            }
+        ]
+        
+        return jsonify({
+            "success": True,
+            "external_content": external_content,
+            "message": "External content fetched successfully"
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error scraping external content: {str(e)}"
+        }), 500
+
+@mindspace_bp.route('/personalized-recommendations', methods=['GET'])
+@jwt_required()
+def get_personalized_recommendations():
+    """Get AI-based personalized recommendations (basic implementation)"""
+    try:
+        user_id = get_jwt_identity()
+        progress = mindspace_model.get_user_progress(user_id)
+        history = mindspace_model.get_user_session_history(user_id, 5)
+        
+        # Simple recommendation logic based on user's favorite category and progress
+        favorite_category = progress.get('favorite_category', 'meditation')
+        
+        # Get sessions from favorite category
+        recommended_sessions = mindspace_model.get_all_sessions(favorite_category.lower())
+        
+        # Filter out recently completed sessions
+        recent_session_ids = [h['session_id'] for h in history]
+        recommended_sessions = [s for s in recommended_sessions if s['id'] not in recent_session_ids]
+        
+        # Limit to top 3 recommendations
+        recommended_sessions = recommended_sessions[:3]
+        
+        return jsonify({
+            "success": True,
+            "recommendations": recommended_sessions,
+            "reason": f"Based on your favorite category: {favorite_category}"
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching recommendations: {str(e)}"
+        }), 500

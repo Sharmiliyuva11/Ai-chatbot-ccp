@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, 
   Users, 
@@ -22,12 +22,9 @@ const Dashboard = () => {
     mood: 8,
     stress: 1
   });
+  const [weeklyActivity, setWeeklyActivity] = useState([65, 78, 45, 89, 67, 78, 92]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -144,7 +141,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const formatActivityTime = (timeStr) => {
     try {
@@ -227,15 +228,32 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="mood-chart-container">
-            {moodData.map((item, index) => (
-              <div key={index} className="mood-bar">
-                <div 
-                  className="mood-bar-fill" 
-                  style={{ height: `${item.value * 10}%` }}
-                ></div>
-                <span className="mood-day">{item.day}</span>
-              </div>
-            ))}
+            <svg viewBox="0 0 240 120" preserveAspectRatio="none">
+              <polyline
+                className="mood-line"
+                points={moodData
+                  .map((item, index) => `${index * (240 / (moodData.length - 1))},${120 - item.value * 10}`)
+                  .join(' ')}
+              />
+              {moodData.map((item, index) => (
+                <g key={item.day}>
+                  <circle
+                    className="mood-point"
+                    cx={index * (240 / (moodData.length - 1))}
+                    cy={120 - item.value * 10}
+                    r="4"
+                  />
+                  <text className="mood-point-value" x={index * (240 / (moodData.length - 1))} y={120 - item.value * 10 - 8}>
+                    {item.value}
+                  </text>
+                </g>
+              ))}
+            </svg>
+            <div className="mood-chart-days">
+              {moodData.map((item) => (
+                <span key={item.day}>{item.day}</span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -250,10 +268,13 @@ const Dashboard = () => {
           <div className="activity-bars">
             {[65, 78, 45, 89, 67, 78, 92].map((value, index) => (
               <div key={index} className="activity-bar">
-                <div 
-                  className="activity-bar-fill" 
+                <div
+                  className="activity-bar-fill"
                   style={{ height: `${value}%` }}
-                ></div>
+                >
+                  <span className="activity-bar-label">{value}%</span>
+                </div>
+                <span className="activity-bar-day">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][index]}</span>
               </div>
             ))}
           </div>
@@ -262,16 +283,46 @@ const Dashboard = () => {
 
       {/* Bottom Section */}
       <div className="bottom-section">
-  <div className="insights-card mood-distribution-box">
+        <div className="insights-card mood-distribution-box">
           <h3>Mood Distribution</h3>
           <div className="mood-distribution">
             <div className="mood-circle">
-              <div className="circle-chart">
-                <div className="circle-segment excellent"></div>
-                <div className="circle-segment good"></div>
-                <div className="circle-segment okay"></div>
-                <div className="circle-segment poor"></div>
-              </div>
+              <svg viewBox="0 0 36 36" className="radial-chart">
+                <path className="radial-bg" d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path
+                  className="radial-segment excellent"
+                  strokeDasharray="45 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  className="radial-segment good"
+                  strokeDasharray="30 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  strokeDashoffset="-45"
+                />
+                <path
+                  className="radial-segment okay"
+                  strokeDasharray="20 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  strokeDashoffset="-75"
+                />
+                <path
+                  className="radial-segment poor"
+                  strokeDasharray="5 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  strokeDashoffset="-95"
+                />
+              </svg>
             </div>
             <div className="mood-legend">
               <div className="legend-item">
@@ -294,7 +345,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-  <div className="progress-card daily-meditation-box">
+        <div className="progress-card daily-meditation-box">
           <h3>Daily Meditation</h3>
           <div className="progress-stats">
             <div className="progress-item">
@@ -332,10 +383,17 @@ const Dashboard = () => {
                 </button>
               </div>
             ))}
+            {!activities.length && (
+              <div className="timeline-empty-state">
+                <Target className="empty-icon" />
+                <h4>No recent updates yet</h4>
+                <p>Your latest check-ins and actions will appear here.</p>
+              </div>
+            )}
           </div>
         </div>
         
-  <div className="chatbot-section ai-assistant-box">
+        <div className="chatbot-section ai-assistant-box">
           <h3>AI Assistant</h3>
           <Chatbot />
         </div>

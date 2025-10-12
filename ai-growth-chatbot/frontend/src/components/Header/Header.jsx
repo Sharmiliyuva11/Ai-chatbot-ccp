@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
-import { Bell, Search, User, Sun, Moon } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Bell, Search, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../contexts/useTheme';
 import './Header.css';
 
